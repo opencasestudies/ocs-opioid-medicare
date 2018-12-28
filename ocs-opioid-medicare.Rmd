@@ -15,8 +15,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Motivation  
 
-
+Opioid prescription has become a popular topic because of 
+the increasing prescription and concerns about overdose, 
+opioid-related deaths, and other opioid-associated side 
+effects. (Ref: [Paulozzi et al. 2011](https://www.ncbi.nlm.nih.gov/pubmed/22048730), 
+[Rudd et al. 2016](https://www.ncbi.nlm.nih.gov/pubmed/28033313), 
+[Rudd et al. 2016](https://www.ncbi.nlm.nih.gov/pubmed/26720857),  
+[Solomon et al. 2010](https://www.ncbi.nlm.nih.gov/pubmed/21149754), 
+[Dunn, et al. 2010](https://www.ncbi.nlm.nih.gov/pubmed/20083827). )  
+   
 # Data Source   
+Recently, the Centers for Medicare & Medicaid Services (CMS) has 
+prepared a public dataset, including information in the part D covering 
+calendar years 2013 through 2016, to make our health care system more transparent, 
+and to allow citizens to understand XX. [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
 
 ```{r out.width = "95%", echo = FALSE, out.width='90%'}
 #knitr::include_graphics("https://aspe.hhs.gov/system/files/images-reports-basic/70441/fig1.jpg")
