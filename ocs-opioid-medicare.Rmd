@@ -24,7 +24,7 @@ effects. (Ref: [Paulozzi et al. 2011](https://www.ncbi.nlm.nih.gov/pubmed/220487
 [Solomon et al. 2010](https://www.ncbi.nlm.nih.gov/pubmed/21149754), 
 [Dunn, et al. 2010](https://www.ncbi.nlm.nih.gov/pubmed/20083827). )  
    
-# Data Source   
+# What is the data?      
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
 prepared a public dataset, including information in the part D covering 
 calendar years 2013 through 2016, to make our health care system more transparent, 
@@ -35,12 +35,324 @@ and to allow citizens to understand XX. [Medicare part D dataset](https://www.cm
 ```
 
 ## Medicare data
+Q: There are two ways to download the data: (1) the traditional way as the following, 
+(2) Using [RSocrata](https://github.com/Chicago/RSocrata). Which do you want to 
+deomstrate? 
+### Opioid information 
+```{r}
+if(!file.exists("./data/2016prescriber.csv")){
+  file_link <- "https://data.cms.gov/api/views/6wg9-kwip/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2016prescriber.csv",mode = "wb") 
+  }
+
+
+if(!file.exists("./data/2015prescriber.csv")){
+  file_link <- "https://data.cms.gov/api/views/6i2k-7h8p/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2015prescriber.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2014prescriber.csv")){
+  file_link <- "https://data.cms.gov/api/views/e4ka-3ncx/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2014prescriber.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2013prescriber.csv")){
+  file_link <- "https://data.cms.gov/api/views/yb2j-f3fp/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2013prescriber.csv",mode = "wb") 
+}
+```
+
+The files we just downloaded contain the following information: 
+```{r include=FALSE}
+library(kableExtra)
+library(tidyverse)
+partdinfodescription = read.csv("./doc/prescriberopioiddescription.csv")
+names(partdinfodescription)[1] <- "Column Name"
+partdinfodescription %>%
+  select(`Column Name`,Description) %>%
+  kable() %>%
+  kable_styling()  
+```
+
+### Medicare Part D beneficiaries information
+Download the beneficier information.  
+```{r}
+if(!file.exists("./data/2016partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/yvpj-pmj2/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2016partDprescriberinfo.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2015partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/3z4d-vmhm/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2015partDprescriberinfo.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2014partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/465c-49pb/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2014partDprescriberinfo.csv",mode = "wb") 
+  }
+
+
+if(!file.exists("./data/2013partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/4uvc-gbfz/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2013partDprescriberinfo.csv",mode = "wb") 
+  }
+
+```
+The files we just downloaded contain the following information: 
+```{r include=FALSE}
+partdinfodescription = read.csv("./doc/partdinfodescription.csv") 
+names(partdinfodescription)[1] <- "Column Name"
+partdinfodescription %>%
+  select(`Column Name`,Description) %>%
+  kable() %>%
+  kable_styling()  
+```
 
 # Data Import 
+```{r}
+library(readr)
+library(tidyverse)
+prescription_2016 <- read_csv("./data/2016prescriber.csv")
+prescription_2015 <- read_csv("./data/2015prescriber.csv")
+prescription_2014 <- read_csv("./data/2014prescriber.csv")
+prescription_2013 <- read_csv("./data/2013prescriber.csv")
+```
+
  
 # Data Wrangling 
+```{r}
+prescription_2016 %>% 
+  mutate(NPI = as.character(NPI)) %>% 
+  head(.) %>%
+  kable() %>%
+  kable_styling()
+```
+
+## Add State information   
+
+```{r}
+unique(prescription_2016$`NPPES Provider State`)
+```
+
+There are 61 values for `NPPES Provider State`. 
+From the [manual](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf), 
+we know that other than the fifty States and DC, there are 
+the other 10 values as fullowing:
+
+Values for `NPPES Provider State` |  Description  |
+--- | --- |
+`XX` | Unknown |
+`AA` | Armed Forces Central/South America |
+`AE` | Armed Forces Europe |
+`AP` | Armed Forces Pacific |
+`AS` | American Samoa |
+`GU` | Guam |
+`MP` | Northern Mariana Islands |
+`PR` | Puerto Rico |
+`VI` | Virgin Islands |
+`ZZ` | Foreign Country |
+
+```{r}
+library(datasets)
+data(state)
+unique(state.name) # There are only 50 States
+state.abb <- c(state.abb, "DC",
+               "XX",
+               "AA",
+               "AE",
+               "AP",
+               "AS",
+               "GU",
+               "MP",
+               "PR",
+               "VI",
+               "ZZ")
+state.region <- as.factor(c(as.character(state.region), "South",
+                            rep("Others",10)))
+state.name <- c(state.name, "District of Columbia",
+                "Unknown",
+                "Armed Forces Central/South America",
+                "Armed Forces Europe",
+                "Armed Forces Pacific",
+                "American Samoa",
+                "Guam",
+                "Northern Mariana Islands",
+                "Puerto Rico",
+                "Virgin Islands",
+                "Foreign Country")
+
+states <- unique(prescription_2016$`NPPES Provider State`) %>% data.frame(.)
+names(states) <- "NPPES Provider State"
+states$state.name <- state.name[match(tolower(states$`NPPES Provider State`), tolower(state.abb))]
+states$region <- state.region[match(tolower(states$`NPPES Provider State`), tolower(state.abb))]
+
+states %>%  
+  kable() %>%
+  kable_styling() 
+```
+
+## Add population information for each State  
+* We need discussion here! 
+* Potential choice:   
+1. [census data](https://www2.census.gov/programs-surveys/popest/datasets/)  
+2. [NPI data. # >= 65]()
+
+
+```{r}
+sum(is.na(prescription_2016$`Total Claim Count`))
+sum(is.na(prescription_2016$`Opioid Claim Count`))
+```
+Also, we noticed that there are some missing values due in `Opioid Claim Count`. This may be due to some reasons (ex: restricted licence issues, ...). To calculate the 
+opioid prescription rate, we need both information. 
+
+```{r}
+prescriber2016byState <- prescription_2016 %>% 
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    select(`NPPES Provider State`,
+                           state.name,region,
+                           `Opioid Claim Count`,
+                           `Total Claim Count`) %>% 
+                    filter(is.na(`Total Claim Count`) + 
+                           is.na(`Opioid Claim Count`) == 0 ) %>%
+                    group_by(`NPPES Provider State`) %>% 
+                    summarise(total.opioid.claim = sum(`Opioid Claim Count`),
+                              total.claim.count = sum(`Total Claim Count`)) %>% 
+                    mutate(state.opioid.prescribing.rate = 
+                             (total.opioid.claim/total.claim.count)*100) %>%
+                    arrange(desc(state.opioid.prescribing.rate)) %>%
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    mutate(year = 2016)
+
+```
+We can apply same techniques to opioid prescription information in different years: 
+```{r}
+prescriber2015byState <- prescription_2015 %>% 
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    select(`NPPES Provider State`,
+                           state.name,region,
+                           `Opioid Claim Count`,
+                           `Total Claim Count`) %>% 
+                    filter(is.na(`Total Claim Count`) + 
+                           is.na(`Opioid Claim Count`) == 0 ) %>%
+                    group_by(`NPPES Provider State`) %>% 
+                    summarise(total.opioid.claim = sum(`Opioid Claim Count`),
+                              total.claim.count = sum(`Total Claim Count`)) %>% 
+                    mutate(state.opioid.prescribing.rate = 
+                             (total.opioid.claim/total.claim.count)*100) %>%
+                    arrange(desc(state.opioid.prescribing.rate))%>%
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    mutate(year = 2015)
+
+prescriber2014byState <- prescription_2014 %>% 
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    select(`NPPES Provider State`,
+                           state.name,region,
+                           `Opioid Claim Count`,
+                           `Total Claim Count`) %>% 
+                    filter(is.na(`Total Claim Count`) + 
+                           is.na(`Opioid Claim Count`) == 0 ) %>%
+                    group_by(`NPPES Provider State`) %>% 
+                    summarise(total.opioid.claim = sum(`Opioid Claim Count`),
+                              total.claim.count = sum(`Total Claim Count`)) %>% 
+                    mutate(state.opioid.prescribing.rate = 
+                             (total.opioid.claim/total.claim.count)*100) %>%
+                    arrange(desc(state.opioid.prescribing.rate))%>%
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    mutate(year = 2014)
+
+prescriber2013byState <- prescription_2013 %>% 
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    select(`NPPES Provider State`,
+                           state.name,region,
+                           `Opioid Claim Count`,
+                           `Total Claim Count`) %>% 
+                    filter(is.na(`Total Claim Count`) + 
+                           is.na(`Opioid Claim Count`) == 0 ) %>%
+                    group_by(`NPPES Provider State`) %>% 
+                    summarise(total.opioid.claim = sum(`Opioid Claim Count`),
+                              total.claim.count = sum(`Total Claim Count`)) %>% 
+                    mutate(state.opioid.prescribing.rate = 
+                             (total.opioid.claim/total.claim.count)*100) %>%
+                    arrange(desc(state.opioid.prescribing.rate))%>%
+                    left_join(.,states,by = c("NPPES Provider State")) %>%
+                    mutate(year = 2013)
+
+```
+
 
 # Data Visualization  
+```{r fig.width=8,fig.height=10}
+library(ggplot2)
+p <- prescriber2016byState %>% 
+                    ggplot(aes(x=reorder(state.name,
+                                         -state.opioid.prescribing.rate), 
+                               y=state.opioid.prescribing.rate)) + 
+                    geom_bar(stat="identity")
+
+p + theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2016") + 
+    xlab("States") + 
+    ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")   
+```
+
+## Ongoing  
+--> Forbidden (HTTP 403) 
+--> [google needs key since June, 2018](https://cloud.google.com/maps-platform/user-guide/account-changes/#no-plan) 
+--> Create my own account and only show the code? 
+```{r fig.width=8,fig.height=10, eval= FALSE}
+#devtools::install_github("dkahle/ggmap", ref = "tidyup")
+library(RCurl)
+library(ggmap)
+
+# Ref: http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
+# No Alaska
+
+map <- get_map(location='united states', zoom=4, maptype = "terrain",
+               source='stamen',color='color')
+
+map <- get_googlemap(center ='united states', zoom=4, maptype = "terrain",
+                     color='color')
+
+statesmapinfo <- map_data("state") %>% 
+                  rename(state.name = region) 
+
+head(statesmapinfo) %>% kable() %>% kable_styling() 
+
+prescriber2016byState4map <- prescriber2016byState %>% 
+                              mutate(state.name = tolower(state.name))
+map2016 <- statesmapinfo %>%
+                    select(-subregion) %>%
+                    left_join(.,prescriber2016byState4map,by = c("state.name") ) %>%
+                    ggmap(map) + 
+                    geom_point(aes(x=longitude, y=latitude, 
+                                   show_guide = TRUE, 
+                                   color = state.opioid.prescribing.rate), 
+                    data=., alpha=.5, na.rm = T)  + 
+                    scale_color_gradient(low="beige", high="blue")
+
+
+  
+                    ggplot(aes(x=reorder(state.name,
+                                         -state.opioid.prescribing.rate), 
+                               y=state.opioid.prescribing.rate)) + 
+                    geom_bar(stat="identity")
+
+p + theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2016") + 
+    xlab("States") + 
+    ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")   
+```
 
 # Summary   
 
