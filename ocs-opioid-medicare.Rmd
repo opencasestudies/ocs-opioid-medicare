@@ -34,10 +34,30 @@ and to allow citizens to understand XX. [Medicare part D dataset](https://www.cm
 #knitr::include_graphics("https://aspe.hhs.gov/system/files/images-reports-basic/70441/fig1.jpg")
 ```
 
-## Medicare data
-Q: There are two ways to download the data: (1) the traditional way as the following, 
-(2) Using [RSocrata](https://github.com/Chicago/RSocrata). Which do you want to 
-deomstrate? 
+## Medicare data (Part D)
+Medicare Part D is prescription drug coverage plan 
+run by Center for Medicare & Medicaid Services (CMS). 
+[Here's a website describing the information about part D](https://www.medicare.gov/drug-coverage-part-d) 
+It was originally proposed by President Bill Clinton in 2000 
+based on earlier proposals developed by Congresswoman 
+Nancy Pelosi and Senator Tom Daschle, and started in 
+January 2006. 
+There are two ways for participaints to enroll in Medicare part D: 
+(1) Medicare Advantage prescription drug plans (MA-PDs), which comes 
+along with other Medicare benefits (ex: Part A or Part B), and 
+(2) stand-alone prescription drug plan (PDP). 
+That means that for those who have already enrolled in Medicare 
+(either >= 65 years old 
+or having certain diseases such as end-stage-renal-disease 
+or other disabilities), they 
+are eligible to join the Part D. 
+( [See the Medicare Part A and Part B for more information.](https://www.hhs.gov/answers/medicare-and-medicaid/who-is-elibible-for-medicare/index.html) and [The eligibility for Medicare among those under 65.](https://www.medicareinteractive.org/get-answers/medicare-basics/medicare-eligibility-overview/medicare-eligibility-for-those-under-65) ).
+For people enrolled in other insurance plan, they may 
+also be eligible to apply for the plan. [Other insurance](https://www.medicare.gov/drug-coverage-part-d/how-part-d-works-with-other-insurance). 
+Q: How many people are there enrolling in this plan?  > 43 million?
+[Source 1](https://www.kff.org/medicare/fact-sheet/an-overview-of-the-medicare-part-d-prescription-drug-benefit/), and
+[Source 2](https://www.kff.org/medicare/issue-brief/medicare-part-d-in-2018-the-latest-on-enrollment-premiums-and-cost-sharing/). 
+
 ### Opioid information 
 ```{r}
 if(!file.exists("./data/2016prescriber.csv")){
@@ -67,7 +87,7 @@ if(!file.exists("./data/2013prescriber.csv")){
 ```
 
 The files we just downloaded contain the following information: 
-```{r include=FALSE}
+```{r}
 library(kableExtra)
 library(tidyverse)
 partdinfodescription = read.csv("./doc/prescriberopioiddescription.csv")
@@ -108,7 +128,7 @@ if(!file.exists("./data/2013partDprescriberinfo.csv")){
 
 ```
 The files we just downloaded contain the following information: 
-```{r include=FALSE}
+```{r}
 partdinfodescription = read.csv("./doc/partdinfodescription.csv") 
 names(partdinfodescription)[1] <- "Column Name"
 partdinfodescription %>%
