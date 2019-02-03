@@ -530,6 +530,9 @@ has_google_key()
 # Ref: http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
 # No Alaska
 
+# library(broom);library(rgdal);
+# library(ggsn)
+
 map <- get_googlemap(center ='united states', zoom=4, maptype = "terrain",
                      color='color')
 
@@ -538,15 +541,15 @@ statesmapinfo <- map_data("state") %>%
 
 head(statesmapinfo) %>% kable() %>% kable_styling() 
 
-prescriber2016byState4map <- prescriber2016byState %>% 
+prescriber2015byState4map <- prescriber2015byState %>% 
                               mutate(state.name = tolower(state.name))
 
-map2016 <- statesmapinfo %>%
+map2015 <- statesmapinfo %>%
                     select(-subregion) %>%
-                    left_join(.,prescriber2016byState4map,by = c("state.name") ) 
+                    left_join(.,prescriber2015byState4map,by = c("state.name") ) 
 
 
-p <- ggplot(data = map2016) + 
+p <- ggplot(data = map2015) + 
       geom_polygon(aes(x = long, y = lat, 
                        fill = state.opioid.prescribing.rate, group = group), 
                    color = "white") + 
@@ -557,13 +560,35 @@ p <- ggplot(data = map2016) +
 p + theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
           axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
-    ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2016") + 
+    ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2015") + 
     xlab("") + 
-    ylab(" ")   
+    ylab(" ") +
+    scale_fill_gradient(breaks = seq(3,9,by = 0.2))
+
+
+p1 <- ggplot(data = map2015) + 
+      geom_polygon(aes(x = long, y = lat, 
+                       fill = opioid.claim.bypop, group = group), 
+                   color = "white") + 
+      coord_quickmap() +
+      guides(fill = FALSE)
+
+
+p1+ theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Opioid claims per 100 enrollment (in Medicare Part D) by State in 2015") + 
+    xlab("") + 
+    ylab(" ") +
+    scale_fill_gradient(breaks = seq(100,340,by = 10))
 ```
 
 ```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics('./img/map2016.png')
+knitr::include_graphics('./img/map2015.png')
+```
+
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./img/map2015perenroll.png')
 ```
 
 # Summary   
