@@ -1,0 +1,10 @@
+﻿Column Name,Description
+NPI,National Provider Identifier
+NPPES Provider Last/Org Name,Last Name/Organization Name of the Provider
+NPPES Provider First Name,First Name of the Provider
+NPPES Provider Zip Code,Zip Code of the Provider
+NPPES Provider State,State Code of the Provider
+Specialty Description,Provider Specialty Type
+Total Claim Count,"The number of Medicare Part D drug claims, including original prescriptions and refills."
+Opioid Claim Count,"The number of Medicare Part D opioid drug claims, including original prescriptions and refills. For a list of drugs that include opioids, visit https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/PartD_DrugCatList_2014.zip."
+Opioid Prescribing Rate,The number of Opioid Claims divided by the Overall Claims and multiplied by 100.

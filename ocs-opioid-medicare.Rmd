@@ -29,7 +29,7 @@ effects. (Ref: [Paulozzi et al. 2011](https://www.ncbi.nlm.nih.gov/pubmed/220487
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
 prepared a public dataset, including information in the part D covering 
 calendar years 2013 through 2016, to make our health care system more transparent, 
-and to allow citizens to understand XX. [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
+and to allow citizens to understand the medical expdenditure and relevant health issues. [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
 
 ```{r out.width = "95%", echo = FALSE, out.width='90%'}
 #knitr::include_graphics("https://aspe.hhs.gov/system/files/images-reports-basic/70441/fig1.jpg")
@@ -55,9 +55,7 @@ are eligible to join the Part D.
 ( [See the Medicare Part A and Part B for more information.](https://www.hhs.gov/answers/medicare-and-medicaid/who-is-elibible-for-medicare/index.html) and [The eligibility for Medicare among those under 65.](https://www.medicareinteractive.org/get-answers/medicare-basics/medicare-eligibility-overview/medicare-eligibility-for-those-under-65) ).
 For people enrolled in other insurance plan, they may 
 also be eligible to apply for the plan. [Other insurance](https://www.medicare.gov/drug-coverage-part-d/how-part-d-works-with-other-insurance). 
-Q: How many people are there enrolling in this plan?  > 43 million?
-[Source 1](https://www.kff.org/medicare/fact-sheet/an-overview-of-the-medicare-part-d-prescription-drug-benefit/), and
-[Source 2](https://www.kff.org/medicare/issue-brief/medicare-part-d-in-2018-the-latest-on-enrollment-premiums-and-cost-sharing/). 
+
 
 ### Opioid information 
 ```{r}
@@ -91,7 +89,7 @@ The files we just downloaded contain the following information:
 ```{r}
 library(kableExtra)
 library(tidyverse)
-partdinfodescription = read.csv("./doc/prescriberopioiddescription.csv")
+partdinfodescription = read.csv("./doc2/prescriberopioiddescription.csv")
 names(partdinfodescription)[1] <- "Column Name"
 partdinfodescription %>%
   select(`Column Name`,Description) %>%
@@ -138,7 +136,7 @@ In general, healthcare providers have their unique
 10-dgit NPIs to identify themselves, and more information can be found 
 in the [NPI Registry Public Search](https://npiregistry.cms.hhs.gov/))
 ```{r}
-partdinfodescription = read.csv("./doc/partdinfodescription.csv") 
+partdinfodescription = read.csv("./doc2/partdinfodescription.csv") 
 names(partdinfodescription)[1] <- "Column Name"
 partdinfodescription %>%
   select(`Column Name`,Description) %>%
@@ -241,7 +239,7 @@ Please let us know if there are year-by-year
 State-level Plan D enrollment information, 
 so that we can update this analysis.)
 ```{r}
-population <- read_csv("./doc/enrollnumber.csv") %>%
+population <- read_csv("./doc2/enrollnumber.csv") %>%
                 dplyr::rename( state.name = State,
                         enrollmentnum = Total)
 ```
@@ -400,7 +398,7 @@ p + theme_bw() +
    
 ## Trend of opioid prescription rate in 2013 - 2016  
 We may want to see the trend of opioid prescription rate during 2013 and 2016 by State. 
-Here, we append the data from different years in ** long format ** first, 
+Here, we append the data from different years in **long format** first, 
 and then plot the trend of opioid prescription rate.  
 ```{r fig.width=12,fig.height=10}
 library(ggplot2)
@@ -456,52 +454,44 @@ p + theme_bw() +
     labs(fill = "Year")
 ```
 
-## Trend of opioid prescription claims by States in 2013 - 2016  
-We may want to see the trend of opioid prescription per 100 enrollment during 2013 and 2016 by State. 
+## Total opioid prescription claims (adjusted for number of enrollment) by States in 2015  
+We may want to see the trend of opioid prescription per 100 enrollment in 2015. 
 ```{r fig.width=12,fig.height=10}
 library(ggplot2)
 
-p <- prescriber2016byState %>% 
-        dplyr::union(.,prescriber2015byState) %>%
-        dplyr::union(.,prescriber2014byState) %>%
-        dplyr::union(.,prescriber2013byState) %>%
+p <- prescriber2015byState %>% 
         dplyr::filter(complete.cases(.)) %>%
                     ggplot(aes(x=reorder(state.name,
                                          -opioid.claim.bypop), 
-                               y=opioid.claim.bypop,
-                               fill = as.factor(year))) + 
+                               y=opioid.claim.bypop)) + 
                     geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
           axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
-    ggtitle("Trend of opioid prescription per 100 enrollments in Medicare Part D\ by State during 2013 - 2016") + 
+    ggtitle("Opioid prescription per 100 enrollments in Medicare Part D\ by State in 2015") + 
     xlab("States") + 
     ylab("Number of opioid prescription claims per 100 enrollments")   + 
     labs(fill = "Year",
          caption = "* Please note that the number of denominator comes from 2015.")
 ```
 
-## Trend of total claims by States in 2013 - 2016  
-We may want to see the trend of total claims per 100 enrollment during 2013 and 2016 by State. 
+## Total claims by States in 2015  
+We may want to see the trend of total claims per 100 enrollment in 2015 by State. 
 ```{r fig.width=12,fig.height=10}
 library(ggplot2)
 
-p <- prescriber2016byState %>% 
-        dplyr::union(.,prescriber2015byState) %>%
-        dplyr::union(.,prescriber2014byState) %>%
-        dplyr::union(.,prescriber2013byState) %>%
+p <- prescriber2015byState %>% 
         dplyr::filter(complete.cases(.)) %>%
                     ggplot(aes(x=reorder(state.name,
                                          -total.claim.bypop), 
-                               y=total.claim.bypop,
-                               fill = as.factor(year))) + 
+                               y=total.claim.bypop)) + 
                     geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
           axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
-    ggtitle("Trend of total claims per 100 enrollments in Medicare Part D by State during 2013 - 2016") + 
+    ggtitle("Total claims per 100 enrollments in Medicare Part D by State in 20150") + 
     xlab("States") + 
     ylab("Number of total claims per 100 enrollments")   + 
     labs(fill = "Year",
@@ -521,18 +511,8 @@ register_google(key = "YOUR API KEY")
 ```{r}
 has_google_key()
 ```
---> Keep working on Alaska
+--> Keep working on Alaska & gradient
 ```{r fig.width=8,fig.height=10, eval=FALSE}
-#devtools::install_github("dkahle/ggmap", ref = "tidyup")
-#library(RCurl)
-#library(ggmap)
-
-# Ref: http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
-# No Alaska
-
-# library(broom);library(rgdal);
-# library(ggsn)
-
 map <- get_googlemap(center ='united states', zoom=4, maptype = "terrain",
                      color='color')
 
