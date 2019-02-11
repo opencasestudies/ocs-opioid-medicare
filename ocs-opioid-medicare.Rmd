@@ -531,10 +531,10 @@ map2015 <- statesmapinfo %>%
 
 p <- ggplot(data = map2015) + 
       geom_polygon(aes(x = long, y = lat, 
-                       fill = state.opioid.prescribing.rate, group = group), 
+                       fill = state.opioid.prescribing.rate,
+                       group = group), 
                    color = "white") + 
-      coord_quickmap() +
-      guides(fill = FALSE)
+      coord_quickmap() 
 
 
 p + theme_bw() + 
@@ -543,15 +543,16 @@ p + theme_bw() +
     ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2015") + 
     xlab("") + 
     ylab(" ") +
-    scale_fill_gradient(breaks = seq(3,9,by = 0.2))
+    scale_fill_gradient(breaks = seq(3,9,by = 1)) +
+    labs(fill = "Opioid Prescrition Rate\n",
+         x = "Longitude", y = "Latitude") 
 
 
 p1 <- ggplot(data = map2015) + 
       geom_polygon(aes(x = long, y = lat, 
                        fill = opioid.claim.bypop, group = group), 
                    color = "white") + 
-      coord_quickmap() +
-      guides(fill = FALSE)
+      coord_quickmap() 
 
 
 p1+ theme_bw() + 
@@ -560,7 +561,10 @@ p1+ theme_bw() +
     ggtitle("Opioid claims per 100 enrollment (in Medicare Part D) by State in 2015") + 
     xlab("") + 
     ylab(" ") +
-    scale_fill_gradient(breaks = seq(100,340,by = 10))
+    scale_fill_gradient(breaks = seq(100,350,by = 50)) +
+    labs(fill = "# of opioid claims per 100 enrollment\n",
+         x = "Longitude", y = "Latitude") 
+ 
 ```
 
 ```{r echo=FALSE, out.width='100%'}
