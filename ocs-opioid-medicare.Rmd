@@ -31,14 +31,16 @@ effects. (Ref: [Paulozzi et al. 2011](https://www.ncbi.nlm.nih.gov/pubmed/220487
 Our motivation is to understand the opioid prescription in the States 
 using publicly available data. Thus, the main questions we are going to ask 
 are:  
-(1) Which States had the higher and lower opioid prescription?  
+(1) Which three States had the highest and lowest opioid prescription?  
 (2) Did the opioid prescription change over time?    
 
 # What is the data?      
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
 prepared a public dataset, including information in the part D covering 
 calendar years 2013 through 2016, to make our health care system more transparent, 
-and to allow citizens to understand the medical expdenditure and relevant health issues. [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
+and to allow citizens to understand the medical expdenditure and 
+relevant health issues. 
+[Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
 
 ```{r out.width = "95%", echo = FALSE, out.width='90%'}
 #knitr::include_graphics("https://aspe.hhs.gov/system/files/images-reports-basic/70441/fig1.jpg")
@@ -47,26 +49,54 @@ and to allow citizens to understand the medical expdenditure and relevant health
 ## Medicare data (Part D)
 Medicare Part D is prescription drug coverage plan 
 run by Center for Medicare & Medicaid Services (CMS). 
-[Here's a website describing the information about part D](https://www.medicare.gov/drug-coverage-part-d) 
+[Here is a website describing the information about Part D](https://www.medicare.gov/drug-coverage-part-d) 
 It was originally proposed by President Bill Clinton in 2000 
 based on earlier proposals developed by Congresswoman 
 Nancy Pelosi and Senator Tom Daschle, and started in 
-January 2006. 
-There are two ways for participaints to enroll in Medicare part D: 
-(1) Medicare Advantage prescription drug plans (MA-PDs), which comes 
-along with other Medicare benefits (ex: Part A or Part B), and 
-(2) stand-alone prescription drug plan (PDP). 
-That means that for those who have already enrolled in Medicare 
-(either >= 65 years old 
-or having certain diseases such as end-stage-renal-disease 
-or other disabilities), they 
+January 2006. There are two ways for participaints to
+enroll in Medicare part D: 
+
+1. Medicare Advantage prescription drug plans (MA-PDs), which
+comes along with other Medicare benefits (ex: Part A or Part B) 
+2. Stand-alone prescription drug plan (PDP)
+
+That means that for those who have already enrolled in 
+Medicare (either >= 65 years old or having certain diseases 
+such as end-stage-renal-disease or other disabilities), they 
 are eligible to join the Part D. 
-( [See the Medicare Part A and Part B for more information.](https://www.hhs.gov/answers/medicare-and-medicaid/who-is-elibible-for-medicare/index.html) and [The eligibility for Medicare among those under 65.](https://www.medicareinteractive.org/get-answers/medicare-basics/medicare-eligibility-overview/medicare-eligibility-for-those-under-65) ).
-For people enrolled in other insurance plan, they may 
-also be eligible to apply for the plan. [Other insurance](https://www.medicare.gov/drug-coverage-part-d/how-part-d-works-with-other-insurance). 
+([For more information on elibility over 65 years old, click here](https://www.hhs.gov/answers/medicare-and-medicaid/who-is-elibible-for-medicare/index.html)
+and [for Medicare eligibility for those under 65, click here](https://www.medicareinteractive.org/get-answers/medicare-basics/medicare-eligibility-overview/medicare-eligibility-for-those-under-65)). For people enrolled 
+in other insurance plan, they may also be eligible to apply
+for the plan. ([For more information on how medicare works 
+with other types of insurance, click here](https://www.medicare.gov/drug-coverage-part-d/how-part-d-works-with-other-insurance)). 
+     
 
+### Opioid information  
+    
+First, let's download the opioid prescriber data from 
+the years 2013-2016, which is available from the CMS 
+website as an application programming interface (API).   
 
-### Opioid information 
+To do this, you can type "opioid" in 
+the [CMS website.](https://data.cms.gov/browse?q=opioid). 
+The following is what you will see: 
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./img/information01.PNG')
+```
+    
+Now you can click on the "Medicare Part D Opioid Prescriber Summary File 2013", and 
+you will be directed to the next page:  
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./img/information02.PNG')
+```
+Further, you can click on the "Export", and choose the "csv", 
+you will be guided to the download link. This is how we found 
+the api link for downloading the data. The screen shot is shown 
+as below:  
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./img/information03.PNG')
+```
+         
 ```{r}
 if(!file.exists("./data/2016prescriber.csv")){
   file_link <- "https://data.cms.gov/api/views/6wg9-kwip/rows.csv"
@@ -94,22 +124,39 @@ if(!file.exists("./data/2013prescriber.csv")){
 }
 ```
 
-The files we just downloaded contain the following information: 
+There is a description about the variables. 
+It can be found in the same page 
+[mentioned above.](https://data.cms.gov/Medicare-Part-D/Medicare-Part-D-Opioid-Prescriber-Summary-File-201/yb2j-f3fp) 
+Here is a screenshot showing how you can find the information. 
+```{r echo=FALSE, out.width='100%'}
+knitr::include_graphics('./img/information04.PNG')
+```
+For your convenience, we have saved it as a csv 
+file (`prescriberopioiddescription.csv`) so that you can 
+undersand the meanings of the variables easily. 
+This file describes what data is contained in each column.
+We use the `kableExtra` library to show the file
+The files we just downloaded contain the following information:    
 ```{r}
 library(kableExtra)
 library(tidyverse)
 partdinfodescription = read.csv("./doc2/prescriberopioiddescription.csv")
 names(partdinfodescription)[1] <- "Column Name"
+
 partdinfodescription %>%
-  select(`Column Name`,Description) %>%
+  select(`Column Name`,Description)  %>% data.frame(.) %>%
   kable() %>%
-  kable_styling()  
+  kable_styling() %>%
+  column_spec(1, bold = T, border_right = T, background = "white") %>%
+  column_spec(2, width = "30em", background = "lightyellow")
 ```
 
 ### Medicare Part D beneficiaries information
 The information about Medicare Part D beneficiaries are publicly available. Here, we 
-deomonstrate how to download file from the website directly. 
-```{r}
+deomonstrate how to download file from the website directly using the method as 
+the aforementioned. However, this is only for demonstration purpose, and 
+not going to be used in this project. 
+```{r eval=FALSE}
 if(!file.exists("./data/2016partDprescriberinfo.csv")){
   file_link <- "https://data.cms.gov/api/views/yvpj-pmj2/rows.csv"
   download.file(file_link,
@@ -150,7 +197,9 @@ names(partdinfodescription)[1] <- "Column Name"
 partdinfodescription %>%
   select(`Column Name`,Description) %>%
   kable() %>%
-  kable_styling()  
+  kable_styling() %>%
+  column_spec(1, bold = T, border_right = T, background = "white") %>%
+  column_spec(2, width = "30em", background = "lightyellow")
 ```
 
 # Data Import 
@@ -171,6 +220,19 @@ prescription_2016 %>%
   kable() %>%
   kable_styling()
 ```
+We can see that the data is structured as provider-based level, 
+meaning that the information in each role is for the specific 
+health care provider. In this project, we're going to do the 
+analysis at State level, so you can probably imagine that we 
+need to have some process to get State-level information from 
+this data. Before moving there, let's take a look at 
+how big the data is for the 2016 information: 
+```{r}
+dim(prescription_2016)
+```
+Wow! There are `r nrow(prescription_2016)` health providers 
+listed in this file. Of note, not every health provider had 
+prescribed opioid in the year 2016.    
 
 ## 1. Add State information   
 In many cases, we want to add basic information about States, 
@@ -301,7 +363,7 @@ sum(!is.na(populationstate$enrollmentnum))
 In the dataset `prescription_2016`, we have information about 
 total claim count, opioid claim count, and extended-release opioid 
 claims. For this project, we only need to look at opioid claim count and 
-total claim count. One question we usu
+total claim count. 
 ```{r}
 sum(is.na(prescription_2016$`Total Claim Count`))
 sum(is.na(prescription_2016$`Opioid Claim Count`))
@@ -337,7 +399,6 @@ year | year of the data came from |
 Since we're going to use the same chuck of codes many 
 times, we can write a function to save our times!   
 ```{r}
-
 anadata <- function(data = data, year = year){
   c <- year
   data %>% 
@@ -425,8 +486,35 @@ Part D, "opioid prescription rate" can be considered as a fair comparisons acros
 (2) Create a variable called "opioid prescription claims per 100 enrollments". 
 Since the enrollment number by States was available in 2015, we can create this 
 variable to directly adjust for the population size. (Please let us know if 
-there's any publicly available information about Part D enrollment by States in the other years.)    
-      
+there's any publicly available information about Part D enrollment by States in the other years.)     
+### Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the States (ie, excluding places with known area labe such as Armed Forces Pacific)?      
+```{r fig.width=8,fig.height=10}
+p <- prescriber2016byState %>% 
+                    filter(region != "Others") %>%
+                    arrange(.,-total.opioid.claim) %>%
+                    filter(row_number() %in% c(1:5,
+                                               n()-4,
+                                               n()-3,
+                                               n()-2,
+                                               n()-1,
+                                               n())) %>%
+                    ggplot(aes(x=reorder(state.name,
+                                         -total.opioid.claim), 
+                               y=total.opioid.claim)) + 
+                    geom_bar(stat="identity")
+
+
+p + scale_y_continuous(labels = comma) +
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Total opioid claims (in Medicare Part D) by State in 2016",
+            subtitle = "Top five States with the highest and lowest opioid prescription") + 
+    xlab("States") + 
+    ylab("Number of opioid claims") 
+```
+
+
 ## 2. Comparing opioid prescription rate by State in 2016 
 ```{r fig.width=8,fig.height=10}
 p <- prescriber2016byState %>% 
