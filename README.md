@@ -3,7 +3,7 @@
 This case study is part of the [OpenCaseStudies]() project. This work is licensed under the Creative Commons Attribution-NonCommercial 3.0 ([CC BY-NC 3.0](https://creativecommons.org/licenses/by-nc/3.0/us/)) United States License.
 
 The libraries used in this study are `library(datasets)`, `library(readr)`, 
-`library(dplyr)`, `library(ggplot2)`, `library(kableExtra)`, 
+`library(dplyr)`, `library(ggplot2)`, `library(ggrepel)`, `library(kableExtra)`, 
 `library(tidyverse)`, `library(scales)`, `library(choroplethr)`, 
 and `library(choroplethrMaps)`. In order to run this code please ensure you have these packages installed.
 
@@ -17,8 +17,8 @@ using publicly available data.
 
 ### Motivating question
 
-1. Which three States had the highest and lowest opioid prescription?  
-2. Did the opioid prescription change over time?   
+1. Which three States had the highest and lowest opioid prescription among the fifty States and DC?   
+2. Did the opioid prescription change over time?     
 
 ### Data
 

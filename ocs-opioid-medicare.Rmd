@@ -144,7 +144,7 @@ partdinfodescription = read.csv("./doc2/prescriberopioiddescription.csv")
 names(partdinfodescription)[1] <- "Column Name"
 
 partdinfodescription %>%
-  select(`Column Name`,Description)  %>% data.frame(.) %>%
+  select(`Column Name`,Description)  %>%
   kable() %>%
   kable_styling() %>%
   column_spec(1, bold = T, border_right = T, background = "white") %>%
@@ -297,7 +297,7 @@ state.name <- c(state.name, "District of Columbia",
 
 states <- unique(prescription_2016$`NPPES Provider State`) %>% data.frame(.)
 names(states) <- "NPPES Provider State"
-states$state.name <- state.name[match(tolower(states$`NPPES Provider State`), tolower(state.abb))]
+states$state_name <- state.name[match(tolower(states$`NPPES Provider State`), tolower(state.abb))]
 states$region <- state.region[match(tolower(states$`NPPES Provider State`), tolower(state.abb))]
 
 states %>%  
@@ -325,8 +325,8 @@ State-level Part D enrollment information,
 so that we can update this analysis.)
 ```{r}
 population <- read_csv("./doc2/enrollnumber.csv") %>%
-                dplyr::rename( state.name = State,
-                        enrollmentnum = Total)
+                dplyr::rename( state_name = State,
+                        enrollment_num2015 = Total)
 ```
 Now, we can add the number of enrollment in 
 Part D by State from `population` to the 
@@ -338,14 +338,14 @@ and "Foreign and Other Outlying Areas". Thus,
 in the further analysis, we can consider if we 
 want to add them in or exclude them. 
 ```{r}
-population$state.name
+population$state_name
 ```
 Now, we can combine the population information with 
 the `state`, and save it as a new data frame called 
 `populationstate`
 ```{r}
 populationstate <- states %>% 
-                dplyr::left_join(.,population, by = c("state.name"))
+                dplyr::left_join(.,population, by = c("state_name"))
 ```
 Let's see what the `populationstate` looks like. 
 ```{r}
@@ -356,7 +356,7 @@ populationstate %>%
 ```
 #### Can you tell how many States do we have the information about number of enrollment in Part D ? 
 ```{r}
-sum(!is.na(populationstate$enrollmentnum))  
+sum(!is.na(populationstate$enrollment_num2015))  
 ```
 
 ## 3. Glimpse at opoioid information 
@@ -385,14 +385,14 @@ information:
 Variable Name |  Description                                       |
 -------- | ------------------------------------------------------ |
 NPPES Provider State | State Abbreviation |
-total.opioid.claim | Total opioid claims (Part D) in the State |
-total.claim.count | Total claims (Part D) in the State |
-state.opioid.prescribing.rate | The proportion of total opioid claims versus total claims (Part D) in the State |
-state.name | State Name |
+total_opioid_claim | Total opioid claims (Part D) in the State |
+total_claim_count | Total claims (Part D) in the State |
+state_opioid_prescribing_rate | The proportion of total opioid claims versus total claims (Part D) in the State |
+state_name | State Name |
 region | The region of the State |
-enrollmentnum | Number of Part D enrollments in 2015 |
-total.claim.bypop | Total claims per 100 enrollment (*) |
-opioid.claim.bypop | Opioid claims per 100 enrollment (*) |
+enrollment_num2015 | Number of Part D enrollments in 2015 |
+total_claim_bypop | Total claims per 100 enrollment (*) |
+opioid_claim_bypop | Opioid claims per 100 enrollment (*) |
 year | year of the data came from |  
 (*) These numbers are valid only for year 2015.
 
@@ -404,25 +404,25 @@ anadata <- function(data = data, year = year){
   data %>% 
     left_join(.,populationstate,by = c("NPPES Provider State")) %>%
     select(`NPPES Provider State`,
-           state.name,region,
+           state_name,region,
            `Opioid Claim Count`,
-           `Total Claim Count`,
-           enrollmentnum) %>% 
+           `Total Claim Count`) %>% 
     filter(is.na(`Total Claim Count`) + 
            is.na(`Opioid Claim Count`) == 0 ) %>%
     group_by(`NPPES Provider State`) %>% 
-    summarise(total.opioid.claim = sum(`Opioid Claim Count`),
-              total.claim.count = sum(`Total Claim Count`)) %>% 
-    mutate(state.opioid.prescribing.rate = 
-           (total.opioid.claim/total.claim.count)*100) %>%
-    arrange(desc(state.opioid.prescribing.rate)) %>%
+    summarise(total_opioid_claim = sum(`Opioid Claim Count`),
+              total_claim_count = sum(`Total Claim Count`)) %>% 
+    mutate(state_opioid_prescribing_rate = 
+           (total_opioid_claim/total_claim_count)*100) %>%
+    arrange(desc(state_opioid_prescribing_rate)) %>%
     left_join(.,populationstate,by = c("NPPES Provider State")) %>%
-    mutate(total.claim.bypop = 
-           (total.claim.count/enrollmentnum)*100,
-           opioid.claim.bypop = 
-           (total.opioid.claim/enrollmentnum)*100) %>%
+    mutate(total_claim_bypop = 
+           (total_claim_count/enrollment_num2015)*100,
+           opioid_claim_bypop = 
+           (total_opioid_claim/enrollment_num2015)*100) %>%
     filter(!is.na(state.name)) %>%
     mutate(year = c) -> x;
+    names(x) = tolower(names(x)); # We change the variable names to lowercase.
   return(x)
  } 
 
@@ -442,9 +442,9 @@ plot the bar chart.
 ```{r fig.width=8,fig.height=10}
 library(ggplot2)
 p <- prescriber2016byState %>% 
-                    ggplot(aes(x=reorder(state.name,
-                                         -total.opioid.claim), 
-                               y=total.opioid.claim)) + 
+                    ggplot(aes(x=reorder(state_name,
+                                         -total_opioid_claim), 
+                               y=total_opioid_claim)) + 
                     geom_bar(stat="identity")
 
 p + theme_bw() + 
@@ -486,21 +486,22 @@ Part D, "opioid prescription rate" can be considered as a fair comparisons acros
 (2) Create a variable called "opioid prescription claims per 100 enrollments". 
 Since the enrollment number by States was available in 2015, we can create this 
 variable to directly adjust for the population size. (Please let us know if 
-there's any publicly available information about Part D enrollment by States in the other years.)     
-### Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the States (ie, excluding places with known area labe such as Armed Forces Pacific)?      
+there's any publicly available information about Part D enrollment by States in the other years.)      
+         
+### Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the fifty States and DC?      
 ```{r fig.width=8,fig.height=10}
 p <- prescriber2016byState %>% 
                     filter(region != "Others") %>%
-                    arrange(.,-total.opioid.claim) %>%
+                    arrange(.,-total_opioid_claim) %>%
                     filter(row_number() %in% c(1:5,
                                                n()-4,
                                                n()-3,
                                                n()-2,
                                                n()-1,
                                                n())) %>%
-                    ggplot(aes(x=reorder(state.name,
-                                         -total.opioid.claim), 
-                               y=total.opioid.claim)) + 
+                    ggplot(aes(x=reorder(state_name,
+                                         -total_opioid_claim), 
+                               y=total_opioid_claim)) + 
                     geom_bar(stat="identity")
 
 
@@ -518,9 +519,9 @@ p + scale_y_continuous(labels = comma) +
 ## 2. Comparing opioid prescription rate by State in 2016 
 ```{r fig.width=8,fig.height=10}
 p <- prescriber2016byState %>% 
-                    ggplot(aes(x=reorder(state.name,
-                                         -state.opioid.prescribing.rate), 
-                               y=state.opioid.prescribing.rate)) + 
+                    ggplot(aes(x=reorder(state_name,
+                                         -state_opioid_prescribing_rate), 
+                               y=state_opioid_prescribing_rate)) + 
                     geom_bar(stat="identity")
 
 p + theme_bw() + 
@@ -546,9 +547,9 @@ p <- prescriber2016byState %>%
         dplyr::union(.,prescriber2015byState) %>%
         dplyr::union(.,prescriber2014byState) %>%
         dplyr::union(.,prescriber2013byState) %>%
-                    ggplot(aes(x=reorder(state.name,
-                                         -state.opioid.prescribing.rate), 
-                               y=state.opioid.prescribing.rate,
+                    ggplot(aes(x=reorder(state_name,
+                                         -state_opioid_prescribing_rate), 
+                               y=state_opioid_prescribing_rate,
                                fill = as.factor(year))) + 
                     geom_bar(position = "dodge", stat="identity")
 
@@ -562,7 +563,37 @@ p + theme_bw() +
 ```
       
 In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States.    
+        
+### Let us visualize the variation during the period of 2013 - 2016 across different States     
+* Here, we define the "variation during the period of 2013 - 2016" as 
+the ratio between "the difference between maximum opioid prescription and 
+minimum opioid prescription during 2013 - 2016" and "the maximum opioid 
+prescription during 2013 - 2016" .  
+```{r fig.width=12,fig.height=10}
+fouryeardata <- prescriber2016byState %>% 
+        union(.,prescriber2015byState) %>%
+        union(.,prescriber2014byState) %>%
+        union(.,prescriber2013byState) %>%
+        filter(region != "Others") %>%
+        group_by(state_name) %>%
+        summarise(max_opioid_claim = max(total_opioid_claim),
+                  min_opioid_claim = min(total_opioid_claim)) %>%
+        mutate(variation = (max_opioid_claim - min_opioid_claim) / max_opioid_claim )
 
+p <- fouryeardata %>%
+      ggplot(aes(x=reorder(state_name,-variation), 
+                 y=variation)) + 
+      geom_bar(position = "dodge", stat="identity")
+
+p + theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Variation of total opioid claims (in Medicare Part D) by State during 2013 - 2016",
+            subtitle = "Variation = (maximun opioid claims - minimum opioid claims) / maximum opioid claims") + 
+    xlab("States") + 
+    ylab("Variation of total opioid claims") 
+
+```
 
 ## 4. Comparing opioid prescriptoin by States in 2015  
 Since there are many policies made at State level, and 
@@ -576,9 +607,9 @@ information about the number of Part D Part enrollment.
 ```{r fig.width=12,fig.height=10}
 p <- prescriber2015byState %>% 
         dplyr::filter(complete.cases(.)) %>% # This line removes the region/States without population information.
-                    ggplot(aes(x=reorder(state.name,
-                                         -state.opioid.prescribing.rate), 
-                               y=state.opioid.prescribing.rate)) + 
+                    ggplot(aes(x=reorder(state_name,
+                                         -state_opioid_prescribing_rate), 
+                               y=state_opioid_prescribing_rate)) + 
                     geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
@@ -594,11 +625,11 @@ p + theme_bw() +
 We may want to see opioid prescription per 100 enrollment in 2015. 
 ```{r fig.width=12,fig.height=10}
 p <- prescriber2015byState %>% 
-        dplyr::filter(complete.cases(.)) %>%
-                    ggplot(aes(x=reorder(state.name,
-                                         -opioid.claim.bypop), 
-                               y=opioid.claim.bypop)) + 
-                    geom_bar(position = "dodge", stat="identity")
+        filter(complete.cases(.)) %>%
+        ggplot(aes(x=reorder(state_name,
+                             -opioid_claim_bypop), 
+                   y=opioid_claim_bypop)) + 
+        geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
@@ -616,7 +647,62 @@ but the proporation of opioid prescription is high. The opioid prescription rate
 Utah, Nevada, Oklahoma, Alabama, Idaho, Colorado, Tennessee, and Oregon 
 are also relatively high. The opioid prescription per 100 enrollments are 
 relatively high in Tennessee, Alabama, and Oklahoma.      
+      
+### Can you visualize the information from these two methods?    
+To visualize the information from these two methods, we 
+propose to compare the "rankings" from two methods. 
+First, we will create one variable called `rank_method1`, which is 
+the rank based on the method I (state opioidd prescrition rate), 
+and the other variable called `rank_method2` , which is the rank 
+based on the method II (opioid claim by number of enrollment). 
+This can be done by using the `dense_rank()`. 
+Then, we can have an x-y plot showing the ranking between these 
+two methods.        
+```{r fig.width=12,fig.height=10}
+## create a new dataframe called "method_comparison"
+method_comparison <- prescriber2015byState %>% 
+        filter(complete.cases(.)) %>%
+        filter(region != "Others") %>%
+        mutate(rank_method1 = dense_rank(desc(state_opioid_prescribing_rate)),
+               rank_method2 = dense_rank(desc(opioid_claim_bypop))) %>%
+        arrange(-opioid_claim_bypop)
 
+## Take a look at the "method_comparison"
+method_comparison %>%
+  head(.) %>%
+  kable() %>%
+  kable_styling()
+
+## Plot the comparison 
+library(ggrepel)
+p <- method_comparison %>% 
+      ggplot(aes(x=rank_method1,
+                 y = rank_method2,
+                 color = region)) + 
+      geom_point() + 
+      geom_smooth(method = "lm", col = "blue")
+
+p + theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Comparison of two methods ranking opioid prescription in Medicare Part D\ by State in 2015",
+            subtitle = "Lower number in rank means higher opioid prescription rate") + 
+    xlab("Rank by Method I (opioid prescription rate)") + 
+    ylab("Rank by Method II (opioid prescription by population)") + 
+    geom_text_repel(aes(label=state_name))  
+ 
+```
+You can tell that these two methods are consistent with some 
+exceptions. One potential reason is that the population composition 
+in each State is different, making the distributions of total 
+prescriptions different. Take State A, with more older residents (>= 80 y/o), 
+and State B, with fewer older residents (>= 80 y/o). Then, 
+it's understandable that the average total prescriptions per 
+person in State A may be higher than the average 
+total prescrptions per person in State B. There are pros and cons 
+of these two different methods, and which should we use is highly 
+dependent on the questions you want to address.    
+   
    
 ## 5. Let's put it on the map!    
 In many cases, you may want to integrate your information on 
@@ -657,14 +743,14 @@ library(choroplethrMaps)
 #state_choropleth(df_pop_state, title="2012 Population by State", legend="Population")
 
 prescriber2015byState %>% 
-  filter(!is.na(enrollmentnum)) %>%
-  mutate(region = tolower(state.name),
-         value = opioid.claim.bypop) %>%  
+  filter(!is.na(enrollment_num2015)) %>%
+  mutate(region = tolower(state_name),
+         value = opioid_claim_bypop) %>%  
   filter(!(region == "american samoa")) %>%
   filter(!(region == "guam")) %>%
   filter(!(region == "northern mariana islands")) %>%
   filter(!(region == "virgin islands")) %>%
-  filter(!(region == "puerto rico")) %>% data.frame(.) %>%
+  filter(!(region == "puerto rico")) %>% 
   select(region,value) ->x
 
 data("df_pop_state")
@@ -685,14 +771,14 @@ What we need to do is to replace the information about (2) values, with
 the opioid prescription rates by States.          
 ```{r fig.width=12,fig.height=10}
 prescriber2015byState %>% 
-  filter(!is.na(enrollmentnum)) %>%
-  mutate(region = tolower(state.name),
-         value = state.opioid.prescribing.rate) %>%  
+  filter(!is.na(enrollment_num2015)) %>%
+  mutate(region = tolower(state_name),
+         value = state_opioid_prescribing_rate) %>%  
   filter(!(region == "american samoa")) %>%
   filter(!(region == "guam")) %>%
   filter(!(region == "northern mariana islands")) %>%
   filter(!(region == "virgin islands")) %>%
-  filter(!(region == "puerto rico")) %>% data.frame(.) %>%
+  filter(!(region == "puerto rico")) %>% 
   select(region,value) ->x
 
 
