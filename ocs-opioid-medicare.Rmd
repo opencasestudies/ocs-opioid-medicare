@@ -30,9 +30,14 @@ effects. (Ref: [Paulozzi et al. 2011](https://www.ncbi.nlm.nih.gov/pubmed/220487
 [Dunn, et al. 2010](https://www.ncbi.nlm.nih.gov/pubmed/20083827). )     
 Our motivation is to understand the opioid prescription in the States 
 using publicly available data. Thus, the main questions we are going to ask 
-are:  
-(1) Which three States had the highest and lowest opioid prescription?  
-(2) Did the opioid prescription change over time?    
+include:  
+(1) Among the 50 States and Disctrict of Columbia, 
+which five States had the highest and lowest number in 
+(a) **Total opioid claims** , (b) **Opioid prescrition rate** 
+( = total opioid claims / total claims ) , and 
+(c) **Opioid prescription per 100 enrollments** ?     
+(2) Did the total number of opioid prescription change over time?    
+(3) Can you visualize the opioid prescription rate on the U.S map?  
 
 # What is the data?      
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
@@ -359,7 +364,7 @@ populationstate %>%
 sum(!is.na(populationstate$enrollment_num2015))  
 ```
 
-## 3. Glimpse at opoioid information 
+## 3. Glimpse at opioid information 
 In the dataset `prescription_2016`, we have information about 
 total claim count, opioid claim count, and extended-release opioid 
 claims. For this project, we only need to look at opioid claim count and 
@@ -397,7 +402,7 @@ year | year of the data came from |
 (*) These numbers are valid only for year 2015.
 
 Since we're going to use the same chuck of codes many 
-times, we can write a function to save our times!   
+times, we can write a function named `anadata` to save our times!   
 ```{r}
 anadata <- function(data = data, year = year){
   c <- year
@@ -453,7 +458,28 @@ p + theme_bw() +
     ggtitle("Total opioid claims (in Medicare Part D) by State in 2016") + 
     xlab("States") + 
     ylab("Number of opioid claims") 
-```
+```   
+It's nice to visualize all the information we have from this dataset. However, 
+based on our original questions, we may want to focus on the 50 States and 
+DC. Since for all the regions other than the 50 States and DC, they were 
+labelled as `Others` in thier `region` variable, we can limit the analysis 
+based on them using the **filter** .     
+```{r fig.width=8,fig.height=10}
+p <- prescriber2016byState %>% 
+                    filter(region!="Others") %>%
+                    ggplot(aes(x=reorder(state_name,
+                                         -total_opioid_claim), 
+                               y=total_opioid_claim)) + 
+                    geom_bar(stat="identity")
+
+p + theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Total opioid claims (in Medicare Part D) by State in 2016") + 
+    xlab("States") + 
+    ylab("Number of opioid claims") 
+```   
+    
      
 You may wonder why the labels on the y-axis are **6e+06** , **4e+06** , 
 ..., which are relatively hard to read. Here comes one potential solution - 
@@ -471,25 +497,32 @@ p + scale_y_continuous(labels = comma) +
     xlab("States") + 
     ylab("Number of opioid claims") 
 ```
-     
-### What are the top three States with the highest opioid prescription in Part D in 2016?  
-Based on the plot above, California, Florida, and Texas are the top three States 
-with the highest opioid prescription in Part D in 2016. At the same time, we know 
-that the population in these three States are higher than other States. Thus, 
-we are not surprised to see these results. To make a fair comparison across 
-different States, we may want to ajdust for "size of States." There are many 
-good options to achieve this goal. In this case study, we provide two potential 
-methods:     
-(1) Create a variable called "opioid prescription rate" (defined by CMS). "opioid prescription rate" is the proportion of opioid claims among the total claims in 
-a certain year. Since total claims can be a proxy of the number of enrollments in 
-Part D, "opioid prescription rate" can be considered as a fair comparisons across States.    
-(2) Create a variable called "opioid prescription claims per 100 enrollments". 
-Since the enrollment number by States was available in 2015, we can create this 
-variable to directly adjust for the population size. (Please let us know if 
-there's any publicly available information about Part D enrollment by States in the other years.)      
          
-### Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the fifty States and DC?      
-```{r fig.width=8,fig.height=10}
+You may feel it's hard to read since you need to either 
+tilt your head or have a special ability to read the labels of States in the 
+x-axis. Here, we provide one way to rotate this bar chart 
+using **coord_flip()** .
+           
+```{r fig.width=10,fig.height=8}
+p + scale_y_continuous(labels = comma) + 
+    coord_flip() +
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) +  
+    ggtitle("Total opioid claims (in Medicare Part D) by State in 2016") + 
+    xlab("States") + 
+    ylab("Number of opioid claims") 
+```     
+     
+### (1) What are the top five States with the highest and lowest opioid prescription claims in Part D in 2016?   
+Based on the plot above, California, Florida, Texas, Pennsylvania, 
+and Michigan are the top five States with the highest opioid prescription claims 
+in Part D in 2016. And the top five States with the lowest 
+opioid prescription claims in Part D in 2016 are District of Columbia, 
+Alaska, Wyoming, Vermont, and Hawaii.       
+         
+### (2) Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the fifty States and DC (with only these States shown)?      
+```{r fig.width=8,fig.height=5}
 p <- prescriber2016byState %>% 
                     filter(region != "Others") %>%
                     arrange(.,-total_opioid_claim) %>%
@@ -499,6 +532,8 @@ p <- prescriber2016byState %>%
                                                n()-2,
                                                n()-1,
                                                n())) %>%
+                    mutate(rankgroup = ifelse(row_number()<=5,"Lowest five",
+                                              "Highest five")) %>%
                     ggplot(aes(x=reorder(state_name,
                                          -total_opioid_claim), 
                                y=total_opioid_claim)) + 
@@ -506,56 +541,132 @@ p <- prescriber2016byState %>%
 
 
 p + scale_y_continuous(labels = comma) +
+    coord_flip() +
+    facet_wrap(~rankgroup, scales="free") +
     theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+          plot.subtitle = element_text(hjust = 0.5),
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
     ggtitle("Total opioid claims (in Medicare Part D) by State in 2016",
             subtitle = "Top five States with the highest and lowest opioid prescription") + 
     xlab("States") + 
     ylab("Number of opioid claims") 
 ```
 
+         
+### (3) How do you feel the results? Do the results surprise you?               
+
+Probably you're not surprised by the results, since 
+the population in California, Florida, and Texas is large, and 
+the population in District of Columbia, Alaska, and Wyoming is small.   
+To make a fair comparison across 
+different States, we may want to ajdust for "size of States." There are many 
+good options to achieve this goal. In this case study, we provide two potential 
+methods:      
+
+  (1) Create a variable called **opioid prescription rate** (defined by CMS). **Opioid prescription rate** is the proportion of opioid claims among the total claims in 
+a certain year. Since total claims can be a proxy of the number of enrollments in 
+Part D, **opioid prescription rate** can be considered as a fair comparisons across States.    
+
+  (2) Create a variable called **opioid prescription claims per 100 enrollments** . 
+Since the enrollment number by States was available in 2015, we can create this 
+variable to directly adjust for the population size. (Please let us know if 
+there's any publicly available information about Part D enrollment by States in the other years.)      
+       
+To visualize our hypothesis, we will have two plots:    
+  (1) The plot showing the number of enrollments versus number of opioid claims     
+```{r fig.width=10,fig.height=8}
+library(ggrepel)
+p <- prescriber2015byState %>% 
+      filter(region != "Others") %>%
+      ggplot(aes(x = enrollment_num2015,
+                 y = total_opioid_claim,
+                 color = region)) + 
+      geom_point() + 
+      geom_smooth(method = "lm", col = "blue")
+
+p + scale_y_continuous(labels = comma) + 
+    scale_x_continuous(labels = comma) +
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ),
+          plot.subtitle = element_text(hjust = 0.5 ),
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Number of enrollments vs. Opioid prescription claims in Medicare Part D\ by State in 2015",
+            subtitle = "Number of enrollments is associated with number of opioid prescription") + 
+    xlab(" Number of enrollments ") + 
+    ylab(" Number of opioid claims ") + 
+    geom_text_repel(aes(label=`nppes provider state`)) 
+
+```
+          
+(2) The plot showing the number of total claims versus number of opioid claims     
+```{r fig.width=10,fig.height=8}
+library(ggrepel)
+p <- prescriber2015byState %>% 
+      filter(region != "Others") %>%
+      ggplot(aes(x = total_claim_count,
+                 y = total_opioid_claim,
+                 color = region)) + 
+      geom_point() + 
+      geom_smooth(method = "lm", col = "blue")
+
+p + scale_y_continuous(labels = comma) + 
+    scale_x_continuous(labels = comma) +
+    theme_bw() + 
+    theme(plot.title = element_text(hjust = 0.5 ),
+          plot.subtitle = element_text(hjust = 0.5 ),
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Total claims vs. Opioid prescription claims in Medicare Part D\ by State in 2015",
+            subtitle = "Number of total claims is associated with number of opioid prescription") + 
+    xlab(" Number of total claims ") + 
+    ylab(" Number of opioid claims ") + 
+    geom_text_repel(aes(label=`nppes provider state`)) 
+
+```          
 
 ## 2. Comparing opioid prescription rate by State in 2016 
-```{r fig.width=8,fig.height=10}
+```{r fig.width=8,fig.height=8}
 p <- prescriber2016byState %>% 
+                    filter(region != "Others") %>%
                     ggplot(aes(x=reorder(state_name,
                                          -state_opioid_prescribing_rate), 
                                y=state_opioid_prescribing_rate)) + 
                     geom_bar(stat="identity")
 
 p + theme_bw() + 
+    coord_flip() +
     theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
     ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2016") + 
     xlab("States") + 
     ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")   
 ```
       
 From this plot, we can see that in Part D in 2016, 
-the opioid prescrition rates in 
-American Samoa and Armed forces are the highest, and the opioid 
-prescription rates in Guam, Northern Mariana Islands, Virgin Islands, and 
-Puerto Rico are the lowest.         
+the opioid prescrition rates in Nevada, Utah, Alabama, Oklahoma, Idaho are the highest, 
+and the opioid prescription rates in New York, Rhode Island, Hawaii, 
+Massachusettes, and North Dakota are the lowest.         
      
 ## 3. Trend of opioid prescription rate in 2013 - 2016  
 We may want to see the trend of opioid prescription rate during 2013 and 2016 by State. 
 Here, we append the data from different years in **long format** first, 
 and then plot the trend of opioid prescription rate.     
-```{r fig.width=12,fig.height=10}
+```{r fig.width=8,fig.height=8}
 p <- prescriber2016byState %>% 
-        dplyr::union(.,prescriber2015byState) %>%
-        dplyr::union(.,prescriber2014byState) %>%
-        dplyr::union(.,prescriber2013byState) %>%
-                    ggplot(aes(x=reorder(state_name,
-                                         -state_opioid_prescribing_rate), 
-                               y=state_opioid_prescribing_rate,
-                               fill = as.factor(year))) + 
-                    geom_bar(position = "dodge", stat="identity")
+        union(.,prescriber2015byState) %>%
+        union(.,prescriber2014byState) %>%
+        union(.,prescriber2013byState) %>%
+        filter(region != "Others") %>%
+        ggplot(aes(x=reorder(state_name,
+                             -state_opioid_prescribing_rate), 
+                   y=state_opioid_prescribing_rate,
+                   fill = as.factor(year))) + 
+        geom_bar(position = "dodge", stat="identity")
 
-p + theme_bw() + 
+p + theme_bw() +
+    coord_flip() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
     ggtitle("Trend of opioid Prescription Rate (in Medicare Part D) by State during 2013 - 2016") + 
     xlab("States") + 
     ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")   + 
@@ -569,7 +680,7 @@ In general, the trend the opioid prescription rate was decreasing during 2013 - 
 the ratio between "the difference between maximum opioid prescription and 
 minimum opioid prescription during 2013 - 2016" and "the maximum opioid 
 prescription during 2013 - 2016" .  
-```{r fig.width=12,fig.height=10}
+```{r fig.width=12,fig.height=8}
 fouryeardata <- prescriber2016byState %>% 
         union(.,prescriber2015byState) %>%
         union(.,prescriber2014byState) %>%
@@ -586,8 +697,10 @@ p <- fouryeardata %>%
       geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
-    theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+    coord_flip() +
+    theme(plot.title = element_text(hjust = 0.5 ),
+          plot.subtitle = element_text(hjust = 0.5 ),
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
     ggtitle("Variation of total opioid claims (in Medicare Part D) by State during 2013 - 2016",
             subtitle = "Variation = (maximun opioid claims - minimum opioid claims) / maximum opioid claims") + 
     xlab("States") + 
@@ -604,36 +717,39 @@ information about the number of Part D Part enrollment.
 
          
 ### Method I: using "opioid prescription rate"    
-```{r fig.width=12,fig.height=10}
+```{r fig.width=12,fig.height=8}
 p <- prescriber2015byState %>% 
-        dplyr::filter(complete.cases(.)) %>% # This line removes the region/States without population information.
-                    ggplot(aes(x=reorder(state_name,
-                                         -state_opioid_prescribing_rate), 
-                               y=state_opioid_prescribing_rate)) + 
-                    geom_bar(position = "dodge", stat="identity")
+        filter(region != "Others") %>% # This line removes the region/States without population information.
+        ggplot(aes(x=reorder(state_name,
+                             -state_opioid_prescribing_rate), 
+                   y=state_opioid_prescribing_rate)) + 
+        geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
+    coord_flip() +
     theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
-    ggtitle("Number of opioid claims per 100 claims (in Medicare Part D) by State in 2015") + 
+          plot.subtitle = element_text(hjust = 0.5 ),
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
+    ggtitle("Opioid prescrion rate (in Medicare Part D) by State in 2015",
+            subtitle = "Opioid prescription rate = ( # of opioid claims / # of total claims ) * 100 %") + 
     xlab("States") + 
-    ylab("Number of opioid claims per 100 claims") + 
-    labs(fill = "region")
+    ylab("Opioid prescription rate (%)") 
 ```
       
 ### Method II: using "opioid prescription per 100 enrollments"       
 We may want to see opioid prescription per 100 enrollment in 2015. 
-```{r fig.width=12,fig.height=10}
+```{r fig.width=12,fig.height=8}
 p <- prescriber2015byState %>% 
-        filter(complete.cases(.)) %>%
+        filter(region != "Others")  %>%
         ggplot(aes(x=reorder(state_name,
                              -opioid_claim_bypop), 
                    y=opioid_claim_bypop)) + 
         geom_bar(position = "dodge", stat="identity")
 
 p + theme_bw() + 
+    coord_flip() +
     theme(plot.title = element_text(hjust = 0.5 ), 
-          axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) + 
+          axis.text.x = element_text(angle = 0, hjust = 1,vjust = 0.5)) + 
     ggtitle("Opioid prescription per 100 enrollments in Medicare Part D\ by State in 2015") + 
     xlab("States") + 
     ylab("Number of opioid prescription claims per 100 enrollments")   
@@ -794,7 +910,7 @@ p + ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2015") +
 ```
      
 # Summary   
-California, Florida, and Texas were the top three States with the highest opioid prescription claim counts in Part D in 2016. However, after taking the population of the States into account, they were not the top three States with the highest opioid prescription rates. Instead, Tennessee, Alabama, and Oklahoma had the highest opioid prescription claims per 100 enrollments. In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States. However, the data for 
+California, Florida, Texas, Pennsylvania, and Michigan are the top five States with the highest opioid prescription claims in Part D in 2016. However, after taking the population of the States into account, they were not the top five States with the highest opioid prescription rates. Instead, Nevada, Utah, Alabama, Oklahoma, Idaho had the highest opioid prescription claims per 100 enrollments. In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States. However, the data for 
 this analysis came from Medicare Part D, and thus opioid presciption information for relatively younger adults was missing in the analysis. Though prescribers' 
 information were added in this analysis, we did not show them in this analysis. 
 Combining these data with opioid-related policies across States may be more informative. 
