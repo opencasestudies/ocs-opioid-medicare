@@ -208,6 +208,7 @@ partdinfodescription %>%
 ```
 
 # Data Import 
+**Do you want to describe how to use readr again?**
 ```{r}
 library(readr)
 library(tidyverse)
@@ -560,7 +561,7 @@ Probably you're not surprised by the results, since
 the population in California, Florida, and Texas is large, and 
 the population in District of Columbia, Alaska, and Wyoming is small.   
 To make a fair comparison across 
-different States, we may want to ajdust for "size of States." There are many 
+different States, we may want to adjust for "size of States." There are many 
 good options to achieve this goal. In this case study, we provide two potential 
 methods:      
 
