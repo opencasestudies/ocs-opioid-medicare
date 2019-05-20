@@ -32,10 +32,11 @@ Our motivation is to understand the opioid prescription in the States
 using publicly available data. Thus, the main questions we are going to ask 
 include:  
 (1) Among the 50 States and Disctrict of Columbia, 
-which five States had the highest and lowest number in 
-(a) **Total opioid claims** , (b) **Opioid prescrition rate** 
-( = total opioid claims / total claims ) , and 
-(c) **Opioid prescription per 100 enrollments** ?     
+which five States had the highest and lowest number in    
+    (a) **Total opioid claims** ,   
+    (b) **Opioid prescrition rate** 
+( = total opioid claims / total claims ) , and    
+    (c) **Opioid prescription per 100 enrollments** ?     
 (2) Did the total number of opioid prescription change over time?    
 (3) Can you visualize the opioid prescription rate on the U.S map?  
 
@@ -797,7 +798,8 @@ p <- method_comparison %>%
                  y = rank_method2,
                  color = region)) + 
       geom_point() + 
-      geom_smooth(method = "lm", col = "blue")
+      geom_abline(slope=1, intercept=0)
+      #geom_smooth(method = "lm", col = "blue")
 
 p + theme_bw() + 
     theme(plot.title = element_text(hjust = 0.5 ), 
