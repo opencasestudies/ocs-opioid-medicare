@@ -17,13 +17,19 @@ using publicly available data.
 
 ### Motivating question
 
-1. Among the 50 States and Disctrict of Columbia, 
-which five States had the highest and lowest number in 
-(a) **Total opioid claims** , (b) **Opioid prescrition rate** 
-( = total opioid claims / total claims ) , and 
-(c) **Opioid prescription per 100 enrollments** ?     
-2. Did the total number of opioid prescription change over time?    
-3. Can you visualize the opioid prescription rate on the U.S map?  
+          
+1. Among the 50 States and District of Columbia, 
+which five States had the highest and lowest number in    
+    (a) **Total opioid claims** ,   
+    (b) **Opioid prescription rate** 
+( = total opioid claims / total claims ) , and    
+    (c) **Opioid prescription per 100 enrollments** ?       
+        
+2. Did the total number of opioid prescriptions change over time?    
+       
+3. Can you visualize the opioid prescription rate on the U.S map?   
+
+       
 
 ### Data
 
