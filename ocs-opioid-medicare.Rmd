@@ -43,7 +43,8 @@ which five States had the highest and lowest number in
        
 (3) Can you visualize the opioid prescription rate on the U.S map?   
 
-      
+
+In this case study, we'll walk you through collecting data, importing data, wrangling data, and visualizing the data, using the well-established and commonly used packages, including `kableExtra`,  `readr` , `tidyverse` , `datasets` , `ggplot2` , `scales` , `ggrepel` , `choroplethr` , and `choroplethrMaps` .     
 
 # What is the data?      
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
@@ -214,10 +215,45 @@ partdinfodescription %>%
 ```
 
 # Data Import 
-**ADD readr CHEATSHEET. MERGE LATER.**
+
+At this stage, you've downloaded your data from 
+CMS API successfully. Now, what you need is to 
+`load` or `read` these data in R. 
+There are several base R functions that allow you 
+read your data into R, which you may be familiar 
+with such as `read.table()`, `read.csv()`, 
+and `read.delim()`. Instead of using these, 
+we will use the functions in the 
+[readr](https://readr.tidyverse.org/articles/readr.html)
+R package. The main reasons for this are 
+
+1. Compared to equivalent base R functions, the 
+functions in `readr` are around 10x faser. 
+2. You can specify the column types (e.g 
+character, integer, double, logical, date, 
+time, etc)
+3. All parsing problems are recordered in 
+a data frame. 
+          
+
+The main functions in `readr` include: 
+
+`readr` functions | Description |
+--- | ---------------------------------------------------------------------------------------- |
+`read_delim()` | reads in a flat file data with a given character to separate fields |
+`read_csv()` | reads in a CSV file |
+`read_tsv()` | reads in a file with values separated by tabs |
+`read_lines()` | reads only a certain number of lines from the file |
+`read_file()` | reads a complete file into a string |
+`write_csv()` | writes data frame to CSV | 
+
+A useful cheatsheet for the functions in the
+`readr` package can be found on RStudio's website: 
+
+![](https://www.rstudio.com/wp-content/uploads/2018/08/data-import.png)
+     
 ```{r}
 library(readr)
-library(tidyverse)
 prescription_2016 <- read_csv("./data/2016prescriber.csv")
 prescription_2015 <- read_csv("./data/2015prescriber.csv")
 prescription_2014 <- read_csv("./data/2014prescriber.csv")
@@ -337,7 +373,7 @@ State-level Part D enrollment information,
 so that we can update this analysis.)
 ```{r}
 population <- read_csv("./doc2/enrollnumber.csv") %>%
-                dplyr::rename( state_name = State,
+                rename( state_name = State,
                         enrollment_num2015 = Total)
 ```
 Now, we can add the number of enrollments in 
@@ -357,7 +393,7 @@ the `state`, and save it as a new data frame called
 `populationstate`
 ```{r}
 populationstate <- states %>% 
-                dplyr::left_join(.,population, by = c("state_name"))
+                      left_join(.,population, by = c("state_name"))
 ```
 Let's see what the `populationstate` looks like. 
 ```{r}
@@ -608,7 +644,6 @@ p + scale_y_continuous(labels = comma) +
           
 (2) The plot showing the number of total claims versus number of opioid claims     
 ```{r fig.width=10,fig.height=8}
-library(ggrepel)
 p <- prescriber2015byState %>% 
       filter(region != "Others") %>%
       ggplot(aes(x = total_claim_count,
@@ -797,7 +832,6 @@ method_comparison %>%
   kable_styling()
 
 ## Plot the comparison 
-library(ggrepel)
 p <- method_comparison %>% 
       ggplot(aes(x=rank_method1,
                  y = rank_method2,
@@ -883,9 +917,6 @@ is the opioid Prescription per 100 enrollments by States.
 ```{r fig.width=12,fig.height=10}
 library(choroplethr)
 library(choroplethrMaps)
-#data(df_pop_state)
-#data(df_state_demographics)
-#state_choropleth(df_pop_state, title="2012 Population by State", legend="Population")
 
 x <- prescriber2015byState %>% 
   filter(!is.na(enrollment_num2015)) %>%

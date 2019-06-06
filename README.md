@@ -49,17 +49,29 @@ For learning purpose, links for download the data were provided,
 and the method to find the links were also provided.  
 
 We also use the `library(datasets)` for States information. Details can be found 
-in our other tutorial. 
+in our other tutorial. [DOI NEED TO BE ADDED.]  
 
 ### Data Import  
- 
+We use the R package library(readr) for data import in this tutorial. 
 
 ### Data wrangling 
+Three R packages, namely `library(tidyr)`, `library(dplyr)`, and 
+`library(kableExtra)` are used for data wrangling in this tutorial. 
+`library(tidyr)` and `library(dplyr)` provide us with the main 
+functions for data wrangling, and `library(kableExtra)` provides 
+us the opportunity to take a look at the data in an organized way. 
 
+
+We also demonstrate some other useful functions for data wrangling, including selecting columns using select(), Selecting rows using filter(), arranging or re-orderomg rows using arrange(), joining two datasets using join(), adding columns using mutate(), creating summaries of columns using summarise(), and grouping operations using group_by(). Details can be found 
+in our other tutorial. [DOI NEED TO BE ADDED.]  
 
 
 ### Data exploration (exploratory analysis)   
 
+For exploratory analysis, we use data visulization for exploratory analysis. `ggplot2` is the R package we demonstrate in this tutorial, and `choroplethrMaps` is the R package we used to help us create the map.  
+
+Basic explanation about how to create plots using ggplot() with basic syntax for ggplot2 
+can be referred to our previous intutorial. [DOI NEED TO BE ADDED.] 
 
 ### Summary   
 
@@ -69,3 +81,12 @@ information were added in this analysis, we did not show them in this analysis.
 Combining these data with opioid-related policies across States may be more informative. 
 
 ### Notes for instructors  
+The libraries used in this study are `kableExtra`, `readr` , `tidyverse` , `datasets` , `ggplot2` , `scales` , `ggrepel` , `choroplethr` , and `choroplethrMaps`. In order to run this code please ensure you have these packages installed.
+
+#### For instructors:        
+
+The objective of this tutorial is for student to get familiar with important skills in data science, including data import (`readr`), data wrangling (`tidyverse`) , and data visualization ( `ggplot2` , `scales` , `ggrepel` , `choroplethr` , and `choroplethrMaps`). Also, the other two useful libraries will be used: `kableExtra` (for organizing the tables displayed on the webpage) and `datasets`(for getting the geographical information in each States) . 
+
+This material is designed for 3.0 teaching hours. (One potential way to teach this tutorial is to divide the material into ttwo 1.5 hour sessions. The first session focuses on data import and data wrangling, and the second session focuses on data visualization.)    
+
+
