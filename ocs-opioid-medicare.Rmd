@@ -228,11 +228,11 @@ we will use the functions in the
 R package. The main reasons for this are 
 
 1. Compared to equivalent base R functions, the 
-functions in `readr` are around 10x faser. 
+functions in `readr` are around 10x faster. 
 2. You can specify the column types (e.g 
 character, integer, double, logical, date, 
 time, etc)
-3. All parsing problems are recordered in 
+3. All parsing problems are recorded in 
 a data frame. 
           
 
@@ -595,9 +595,31 @@ p + scale_y_continuous(labels = comma) +
     xlab("States") + 
     ylab("Number of opioid claims") 
 ```
+       
+    
+### (3) Are you satisfied with the plots?                
+The plots did show the numbers of total opioid claims right. 
+However, the audience need to read the x-axis carefully. 
+Otherwise, they may misinterpret the results since the scales 
+are so different. In this case, it may be a good idea to show 
+a table with the numbers.     
 
-         
-### (3) How do you feel about the results? Do the results surprise you?               
+```{r fig.width=8,fig.height=5}
+prescriber2016byState %>% 
+                    filter(region != "Others") %>%
+                    arrange(.,-total_opioid_claim) %>%
+                    filter(row_number() %in% c(1:5,
+                                               n()-4,
+                                               n()-3,
+                                               n()-2,
+                                               n()-1,
+                                               n())) %>%
+                    select(state_name,total_opioid_claim) %>%
+                    kable() %>%
+                    kable_styling()
+
+```
+### (4) How do you feel about the results? Do the results surprise you?               
 
 Probably you're not surprised by the results, since 
 the population in California, Florida, and Texas is large, and 
