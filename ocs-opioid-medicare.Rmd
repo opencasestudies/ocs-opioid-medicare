@@ -738,6 +738,47 @@ p + theme_bw() +
 ```
       
 In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States.    
+
+### Modeling 
+* Problems happened for models (1) adjusting for total claim counts, and (2) use year as the covariate.           
+```{r warning=TRUE, message=TRUE}
+datamodel <- prescriber2016byState %>% 
+        union(.,prescriber2015byState) %>%
+        union(.,prescriber2014byState) %>%
+        union(.,prescriber2013byState) %>%
+        filter(region != "Others") %>%
+        mutate(interval = year - 2013)
+
+library(lme4)
+
+fit1 <- lmer(total_opioid_claim ~ total_claim_count + 
+                                  as.factor(region) + year + 
+                                  (1 + year | state_name), 
+             data =  datamodel,
+             control = lmerControl(
+               check.conv.grad = .makeCC("warning", tol = 2e-1, relTol = NULL)))
+
+fit2 <- lmer(total_opioid_claim ~ as.factor(region) + year + 
+                                  (1 + year | state_name), 
+             data =  datamodel,
+             control = lmerControl(
+               check.conv.grad = .makeCC("warning", tol = 2e-1, relTol = NULL)))
+
+fit3 <- lmer(total_opioid_claim ~ as.factor(region) + interval + 
+                                  (1 + interval | state_name), 
+             data =  datamodel)
+
+summary(fit3)
+
+
+fit4 <- lmer(total_opioid_claim ~ as.factor(region)*interval + 
+                                  (1 + interval | state_name), 
+             data =  datamodel)
+
+summary(fit4)
+
+anova(fit3,fit4)
+```
         
 ### Let us visualize the variation during the period of 2013 - 2016 across different States     
 * Here, we define the "variation during the period of 2013 - 2016" as 
