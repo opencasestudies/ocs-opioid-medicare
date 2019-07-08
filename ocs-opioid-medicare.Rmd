@@ -50,7 +50,7 @@ In this case study, we'll walk you through collecting data, importing data, wran
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
 prepared a public dataset, including information in the part D covering 
 calendar years 2013 through 2016, to make our health care system more transparent, 
-and to allow citizens to understand the medical expdenditure and 
+and to allow citizens to understand the medical expenditure and 
 relevant health issues. 
 [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
 
@@ -147,7 +147,8 @@ For your convenience, we have saved it as a csv
 file (`prescriberopioiddescription.csv`) so that you can 
 understand the meanings of the variables easily. 
 This file describes what data is contained in each column.
-We use the `kableExtra` library to show the file
+We use the commands in the `kableExtra` package to show the file to 
+give us a nice display of the table in the windows.  
 The files we just downloaded contain the following information:    
 ```{r}
 library(kableExtra)
@@ -163,56 +164,6 @@ partdinfodescription %>%
   column_spec(2, width = "30em", background = "lightyellow")
 ```
 
-### Medicare Part D beneficiaries information
-The information about Medicare Part D beneficiaries are publicly available. Here, we 
-demonstrate how to download file from the website directly using the method as 
-the aforementioned. However, this is only for demonstration purpose, and 
-not going to be used in this project. 
-```{r eval=FALSE}
-if(!file.exists("./data/2016partDprescriberinfo.csv")){
-  file_link <- "https://data.cms.gov/api/views/yvpj-pmj2/rows.csv"
-  download.file(file_link,
-                destfile = "./data/2016partDprescriberinfo.csv",mode = "wb") 
-  }
-
-if(!file.exists("./data/2015partDprescriberinfo.csv")){
-  file_link <- "https://data.cms.gov/api/views/3z4d-vmhm/rows.csv"
-  download.file(file_link,
-                destfile = "./data/2015partDprescriberinfo.csv",mode = "wb") 
-  }
-
-if(!file.exists("./data/2014partDprescriberinfo.csv")){
-  file_link <- "https://data.cms.gov/api/views/465c-49pb/rows.csv"
-  download.file(file_link,
-                destfile = "./data/2014partDprescriberinfo.csv",mode = "wb") 
-  }
-
-
-if(!file.exists("./data/2013partDprescriberinfo.csv")){
-  file_link <- "https://data.cms.gov/api/views/4uvc-gbfz/rows.csv"
-  download.file(file_link,
-                destfile = "./data/2013partDprescriberinfo.csv",mode = "wb") 
-  }
-
-```
-The following is the codebook. In other words, 
-the description of the variables in the dataset 
-we just downloaded is summarized in the following 
-table: (Of note, NPI stands for National Provider Identifier, 
-and NPPES stands for CMS National Plan and Provider Enumeration System. 
-In general, healthcare providers have their unique 
-10-dgit NPIs to identify themselves, and more information can be found 
-in the [NPI Registry Public Search](https://npiregistry.cms.hhs.gov/))
-```{r}
-partdinfodescription = read.csv("./doc2/partdinfodescription.csv") 
-names(partdinfodescription)[1] <- "Column Name"
-partdinfodescription %>%
-  select(`Column Name`,Description) %>%
-  kable() %>%
-  kable_styling() %>%
-  column_spec(1, bold = T, border_right = T, background = "white") %>%
-  column_spec(2, width = "30em", background = "lightyellow")
-```
 
 # Data Import 
 
@@ -260,7 +211,12 @@ prescription_2014 <- read_csv("./data/2014prescriber.csv")
 prescription_2013 <- read_csv("./data/2013prescriber.csv")
 ```
 
-# Data Wrangling 
+# Data Wrangling  
+Combining the functions in the packages `dplyr` and 
+`kableExtra` can help us take a glance at the data. 
+Here, we use the `mutate` to generate a new character 
+variable named `NPI` and use the `kable()` and 
+`kable_styling` to make the display clearer.   
 ```{r}
 prescription_2016 %>% 
   mutate(NPI = as.character(NPI)) %>% 
@@ -365,7 +321,7 @@ other than the opioid claim information we've already got,
 we also need the information about how many participants 
 enrolled in the Part D plan for each State. To the best of 
 our knowledge, we can get the 2015 enrollment information from 
-the publicly available  
+the publicly available 
 [CMS website](https://www.cms.gov/newsroom/press-releases/its-50th-anniversary-more-55-million-americans-covered-medicare).    
 (Note: The information is based on 2015. 
 Please let us know if there are year-by-year 
@@ -378,7 +334,7 @@ population <- read_csv("./doc2/enrollnumber.csv") %>%
 ```
 Now, we can add the number of enrollments in 
 Part D by State from `population` to the 
-States information datast `states`.   
+States information dataset `states`.   
 Note that there is some difference in the 
 names of States between `population` and 
 `states`. They are "Pending State Designation" 
@@ -479,6 +435,11 @@ prescriber2015byState <- anadata(prescription_2015,2015)
 prescriber2014byState <- anadata(prescription_2014,2014)
 prescriber2013byState <- anadata(prescription_2013,2013)
 ```
+     
+Here, we write a loop to execute the repetitive procedures. 
+The alternative to do it is to implement some commands in 
+the package `purrr`. [ Here is the cheatsheet for 
+using [purrr](https://github.com/rstudio/cheatsheets/raw/master/purrr.pdf)]    
 
 Now, we're ready for our next step - data visualization! 
 
@@ -501,7 +462,8 @@ p + theme_bw() +
     ggtitle("Total opioid claims (in Medicare Part D) by State in 2016") + 
     xlab("States") + 
     ylab("Number of opioid claims") 
-```   
+```       
+         
 It's nice to visualize all the information we have from this dataset. However, 
 based on our original questions, we may want to focus on the 50 States and 
 DC. Since for all the regions other than the 50 States and DC, they were 
@@ -619,6 +581,36 @@ prescriber2016byState %>%
                     kable_styling()
 
 ```
+     
+Alternatively, you can show the top 5 by  
+```{r fig.width=8,fig.height=5}
+prescriber2016byState %>% 
+                    filter(region != "Others") %>%
+                    arrange(.,-total_opioid_claim) %>%
+                    filter(row_number() %in% c(1:5)) %>%
+                    select(state_name,total_opioid_claim) %>%
+                    kable() %>%
+                    kable_styling()
+```    
+    
+And you can show the lower 5 by 
+```{r fig.width=8,fig.height=5}
+
+prescriber2016byState %>% 
+                    filter(region != "Others") %>%
+                    arrange(.,-total_opioid_claim) %>%
+                    filter(row_number() %in% c(n()-4,
+                                               n()-3,
+                                               n()-2,
+                                               n()-1,
+                                               n())) %>%
+                    select(state_name,total_opioid_claim) %>%
+                    kable() %>%
+                    kable_styling()
+
+```    
+
+     
 ### (4) How do you feel about the results? Do the results surprise you?               
 
 Probably you're not surprised by the results, since 
@@ -707,12 +699,15 @@ p + theme_bw() +
 ```
       
 From this plot, we can see that in Part D in 2016, 
-the opioid prescrition rates in Nevada, Utah, Alabama, Oklahoma, Idaho are the highest, 
+the opioid prescription rates in Nevada, Utah, Alabama, Oklahoma, Idaho are the highest, 
 and the opioid prescription rates in New York, Rhode Island, Hawaii, 
-Massachusettes, and North Dakota are the lowest.         
+Massachusetts, and North Dakota are the lowest.         
      
 ## 3. Trend of opioid prescription rate in 2013 - 2016  
-We may want to see the trend of opioid prescription rate during 2013 and 2016 by State. 
+We may want to see the trend of opioid prescription rate during 2013 and 2016 by State.   
+      
+### Visualize the change by States using bar chart     
+     
 Here, we append the data from different years in **long format** first, 
 and then plot the trend of opioid prescription rate.     
 ```{r fig.width=8,fig.height=8}
@@ -739,47 +734,6 @@ p + theme_bw() +
       
 In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States.    
 
-### Modeling 
-* Problems happened for models (1) adjusting for total claim counts, and (2) use year as the covariate.           
-```{r warning=TRUE, message=TRUE}
-datamodel <- prescriber2016byState %>% 
-        union(.,prescriber2015byState) %>%
-        union(.,prescriber2014byState) %>%
-        union(.,prescriber2013byState) %>%
-        filter(region != "Others") %>%
-        mutate(interval = year - 2013)
-
-library(lme4)
-
-fit1 <- lmer(total_opioid_claim ~ total_claim_count + 
-                                  as.factor(region) + year + 
-                                  (1 + year | state_name), 
-             data =  datamodel,
-             control = lmerControl(
-               check.conv.grad = .makeCC("warning", tol = 2e-1, relTol = NULL)))
-
-fit2 <- lmer(total_opioid_claim ~ as.factor(region) + year + 
-                                  (1 + year | state_name), 
-             data =  datamodel,
-             control = lmerControl(
-               check.conv.grad = .makeCC("warning", tol = 2e-1, relTol = NULL)))
-
-fit3 <- lmer(total_opioid_claim ~ as.factor(region) + interval + 
-                                  (1 + interval | state_name), 
-             data =  datamodel)
-
-summary(fit3)
-
-
-fit4 <- lmer(total_opioid_claim ~ as.factor(region)*interval + 
-                                  (1 + interval | state_name), 
-             data =  datamodel)
-
-summary(fit4)
-
-anova(fit3,fit4)
-```
-        
 ### Let us visualize the variation during the period of 2013 - 2016 across different States     
 * Here, we define the "variation during the period of 2013 - 2016" as 
 the ratio between "the difference between maximum opioid prescription and 
@@ -812,6 +766,72 @@ p + theme_bw() +
     ylab("Variation of total opioid claims") 
 
 ```
+
+### Alternative way to display the longitudinal trends      
+There are many ways to display the longitudinal trends of opioid prescription 
+rate. In the plot shown above, the longitudinal change was shown clearly by States. 
+However, it has some disadvantages:   
+(1) It is difficult for us to compare the trend from State to State directly.       
+(2) It is hard for us to explore the potential reasons to explain the difference 
+between different States.   
+Now, suppose we want to visually explore whether the change in opioid prescription rate 
+over time was associate with region, we may want to have a plot showing 
+the changes over time by States, which also incorporated the region information. 
+Based on what we have established, we need to organize our data in `long format` 
+and add the `group` information in our `ggplot`.   
+```{r warning=TRUE, message=TRUE, fig.width=10,fig.height=8}
+datamodel <- prescriber2016byState %>% 
+        union(.,prescriber2015byState) %>%
+        union(.,prescriber2014byState) %>%
+        union(.,prescriber2013byState) %>%
+        filter(region != "Others") %>%
+        mutate(interval = year - 2013)
+
+p <- datamodel %>%
+  ggplot(aes(x = year, 
+             y = state_opioid_prescribing_rate, 
+             group = state_name,
+             color = region)) + 
+  geom_line()
+
+
+p + theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 0, hjust = 0.5,vjust = 0.5)) + 
+    ggtitle("Trend of opioid Prescription Rate (in Medicare Part D) by State during 2013 - 2016") + 
+    xlab("Calender Year") + 
+    ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")  + 
+    labs(color = "Region") 
+```      
+      
+Also, you may want to add a "summarized" line for each region. 
+In other words, the question is whether we can visually display 
+the summarized longitudinal trend in each region. Here, we provide 
+a way that can achieve this goal in a few seconds. The idea is 
+to take the average of opioid prescription rate in each region at 
+year 2013, 2014, 2015, and 2016, and further then plot the trend 
+of the region-specific average opioid prescription rate over time.   
+
+```{r fig.width=10,fig.height=8}
+p <- datamodel %>%
+  ggplot(aes(x = year, 
+             y = state_opioid_prescribing_rate, 
+             group = state_name,
+             color = region)) + 
+  stat_summary(aes(group = region), 
+               geom = "line", 
+               fun.y = mean, size = 5)  +
+  geom_line()
+
+p + theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5 ), 
+          axis.text.x = element_text(angle = 0, hjust = 0.5,vjust = 0.5)) + 
+    ggtitle("Trend of opioid Prescription Rate (in Medicare Part D) by State during 2013 - 2016") + 
+    xlab("Calender Year") + 
+    ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")  + 
+    labs(color = "Region") 
+```      
+     
 
 ## 4. Comparing opioid prescription by States in 2015  
 Since there are many policies made at State level, and 
@@ -864,7 +884,7 @@ p + theme_bw() +
 The opioid prescription rate was high in  American Samoa, but 
 the opioid prescription per 100 enrollments is low in American Samoa. 
 This may be due to there are relatively few total claims in American Samoa, 
-but the proporation of opioid prescription is high. The opioid prescription rates in 
+but the proportion of opioid prescription is high. The opioid prescription rates in 
 Utah, Nevada, Oklahoma, Alabama, Idaho, Colorado, Tennessee, and Oregon 
 are also relatively high. The opioid prescription per 100 enrollments are 
 relatively high in Tennessee, Alabama, and Oklahoma.      
@@ -919,7 +939,7 @@ prescriptions different. Take State A, with more older residents (>= 80 y/o),
 and State B, with fewer older residents (>= 80 y/o). Then, 
 it's understandable that the average total prescriptions per 
 person in State A may be higher than the average 
-total prescrptions per person in State B. There are pros and cons 
+total prescriptions per person in State B. There are pros and cons 
 of these two different methods, and which should we use is highly 
 dependent on the questions you want to address.   
       
@@ -954,7 +974,7 @@ chart to the U.S. map in your brain. Here, we will use the
 goal. There is [a nice website](http://www.bargava.com/Intro-to-Choropleth-using-R/) 
 introducing these packages. 
 The other common approach is to use `ggmap`, which 
-may ask you to apply for a google API key in advance.       
+may ask you to apply for a Google API key in advance.       
       
 ### Step 1: Get the location information for each State    
 We have done this earlier. This means that the dataset `state` 
@@ -1038,6 +1058,113 @@ p + ggtitle("Opioid Prescription Rate (in Medicare Part D) by State in 2015") +
      
 # Summary   
 California, Florida, Texas, Pennsylvania, and Michigan are the top five States with the highest opioid prescription claims in Part D in 2016. However, after taking the population of the States into account, they were not the top five States with the highest opioid prescription rates. Instead, Nevada, Utah, Alabama, Oklahoma, Idaho had the highest opioid prescription claims per 100 enrollments. In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States. However, the data for 
-this analysis came from Medicare Part D, and thus opioid prescription information for relatively younger adults was missing in the analysis. Though prescribers' 
-information was added in this analysis, we did not show them in this analysis. 
-Combining these data with opioid-related policies across States may be more informative. 
+this analysis came from Medicare Part D, and thus opioid prescription information for relatively younger adults was missing in the analysis. Combining 
+these data with opioid-related policies across States may be more informative. 
+
+           
+# Appendix          
+There are at least two extentions you can make from this case study.    
+The first one is linking this with more publicly available data. 
+The second one is to demonstrate longitudinal data analysis.     
+     
+## Extension 1 : Additional data source        
+`Medicare Part D beneficiaries information` is publicly available, and 
+may provide additional information you are interested in. 
+The information about Medicare Part D beneficiaries are publicly available. Here, we 
+demonstrate how to download file from the website directly using the method as 
+the aforementioned. However, this is only for demonstration purpose, and 
+not going to be used in this project. 
+```{r eval=FALSE}
+if(!file.exists("./data/2016partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/yvpj-pmj2/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2016partDprescriberinfo.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2015partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/3z4d-vmhm/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2015partDprescriberinfo.csv",mode = "wb") 
+  }
+
+if(!file.exists("./data/2014partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/465c-49pb/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2014partDprescriberinfo.csv",mode = "wb") 
+  }
+
+
+if(!file.exists("./data/2013partDprescriberinfo.csv")){
+  file_link <- "https://data.cms.gov/api/views/4uvc-gbfz/rows.csv"
+  download.file(file_link,
+                destfile = "./data/2013partDprescriberinfo.csv",mode = "wb") 
+  }
+
+```
+The following is the code book. In other words, 
+the description of the variables in the dataset 
+we just downloaded is summarized in the following 
+table: (Of note, NPI stands for National Provider Identifier, 
+and NPPES stands for CMS National Plan and Provider Enumeration System. 
+In general, healthcare providers have their unique 
+10-digit NPIs to identify themselves, and more information can be found 
+in the [NPI Registry Public Search](https://npiregistry.cms.hhs.gov/))
+```{r}
+partdinfodescription = read.csv("./doc2/partdinfodescription.csv") 
+names(partdinfodescription)[1] <- "Column Name"
+partdinfodescription %>%
+  select(`Column Name`,Description) %>%
+  kable() %>%
+  kable_styling() %>%
+  column_spec(1, bold = T, border_right = T, background = "white") %>%
+  column_spec(2, width = "30em", background = "lightyellow")
+```    
+               
+## Extension 2 : Longitudinal data analysis      
+ The above plots showing the longitudinal trend 
+may inspire you the following questions:    
+     
+(1) Is the region associated with the opioid prescription rate 
+at the baseline (aka, at year 2013)?        
+     
+(2) Is the region associated with the rate of decline in opioid 
+prescription rate across time during 2013 - 2016?     
+        
+These are all great questions, but we are not going to discuss 
+about this deeply in this case study. If you are interested in 
+these questions, we would recommend you to read some materials 
+about longitudinal data analysis. For your convenience, we 
+do provide some sample codes. We will run two linear mixed effect 
+models using the package `lme4`, and provide brief interpretation. 
+In the first model `fit1`, we are investigating whether 
+the region is associated with
+the opioid prescription rate in the year 2013 while we don't allow 
+the change of opioid prescription rate to be differed by region. 
+In the second model `fit2`, we are investigating whether the region 
+is associated with the opioid prescription rate in the year 2013 and 
+whether region associated with the rate of decline in opioid 
+prescription rate across time during 2013 - 2016 at the same time 
+while we allow the change of opioid prescription rate to be differed 
+by regions.    
+**( Note: The instructors still need to add the interpretation of random intercept and random slope.)**
+```{r}
+library(lme4)
+
+fit1 <- lmer(state_opioid_prescribing_rate ~ as.factor(region) + interval + 
+                                  (1 | state_name), 
+             data =  datamodel)
+
+summary(fit1)
+
+fit2 <- lmer(state_opioid_prescribing_rate ~ as.factor(region)*interval + interval + 
+                                  (1 + interval | state_name), 
+             data =  datamodel)
+
+summary(fit2)
+```
+From these models, we can conclude that the opioid prescription rate 
+was decreasing over time during 2013 - 2016. Though there are some 
+difference in the opioid prescription rate across different regions 
+at the baseline (in the year 2013), there is no obvious difference in 
+the trend of decline across different regions.   
+
