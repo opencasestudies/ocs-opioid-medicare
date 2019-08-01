@@ -49,7 +49,7 @@ For learning purpose, links for download the data were provided,
 and the method to find the links were also provided.  
 
 We also use the `library(datasets)` for States information. Details can be found 
-in our other tutorial. [DOI NEED TO BE ADDED.]  
+in our other tutorial. [DOI:10.5281/zenodo.2565307.]  
 
 ### Data Import  
 We use the R package library(readr) for data import in this tutorial. 
@@ -63,7 +63,7 @@ us the opportunity to take a look at the data in an organized way.
 
 
 We also demonstrate some other useful functions for data wrangling, including selecting columns using select(), Selecting rows using filter(), arranging or re-orderings rows using arrange(), joining two datasets using join(), adding columns using mutate(), creating summaries of columns using summarise(), and grouping operations using group_by(). Details can be found 
-in our other tutorial. [DOI NEED TO BE ADDED.]  
+in our other tutorial. [DOI:10.5281/zenodo.2565307.]  
 
 
 ### Data exploration (exploratory analysis)   
@@ -71,7 +71,7 @@ in our other tutorial. [DOI NEED TO BE ADDED.]
 For exploratory analysis, we use data visualization for exploratory analysis. `ggplot2` is the R package we demonstrate in this tutorial, and `choroplethrMaps` is the R package we used to help us create the map.  
 
 Basic explanation about how to create plots using ggplot() with basic syntax for ggplot2 
-can be referred to our previous in tutorial. [DOI NEED TO BE ADDED.] 
+can be referred to our previous in tutorial. [DOI:10.5281/zenodo.2565307.] 
 
 ### Summary   
 

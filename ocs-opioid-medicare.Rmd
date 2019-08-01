@@ -44,14 +44,32 @@ which five States had the highest and lowest number in
 (3) Can you visualize the opioid prescription rate on the U.S map?   
 
 
-In this case study, we'll walk you through collecting data, importing data, wrangling data, and visualizing the data, using the well-established and commonly used packages, including `kableExtra`,  `readr` , `tidyverse` , `datasets` , `ggplot2` , `scales` , `ggrepel` , `choroplethr` , and `choroplethrMaps` .     
+In this case study, we'll walk you through collecting data, 
+importing data, wrangling data, and visualizing the data, 
+using the well-established and commonly used packages, including 
+`kableExtra`,  `readr` , `tidyverse` , `datasets` , `ggplot2` , 
+`scales` , `ggrepel` , `choroplethr` , and `choroplethrMaps` . 
+Here we provide an overview aobut these packages 
+before we starts: 
+
+|R package|What can the package provide?|
+|---|--------------------------------------------------------------------------------------------------------------|
+|`kableExtra`|Helps with building complex tables and manipulating table styles; creates awesome HTML tables|
+|`readr`|Allows you to read data from various formats faster|
+|`tidyverse`|Provides user-friendly data manipulation|
+|`datasets`|Gives us useful information, including the States' information|
+|`ggplot2`|Improves data visualisations|
+|`scales`|Adds the flexibility of scaling|
+|`ggrepel`|Avoids superimposing the legends you don't expect|
+|`choroplethr`|Helps preparing for plotting the U.S. Map|
+|`choroplethrMaps`|Helps us plot the U.S. Map|
 
 # What is the data?      
 Recently, the Centers for Medicare & Medicaid Services (CMS) has 
 prepared a public dataset, including information in the part D covering 
 calendar years 2013 through 2016, to make our health care system more transparent, 
 and to allow citizens to understand the medical expenditure and 
-relevant health issues. 
+relevant health issues. You can find the description of the data here:  
 [Medicare part D dataset](https://www.cms.gov/Research-Statistics-Data-and-Systems/Statistics-Trends-and-Reports/Medicare-Provider-Charge-Data/Downloads/Prescriber_Methods.pdf)  
 
 ```{r out.width = "95%", echo = FALSE, out.width='90%'}
