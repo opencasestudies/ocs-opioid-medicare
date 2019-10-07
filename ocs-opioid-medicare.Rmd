@@ -3,6 +3,7 @@ title: OpenCaseStudies - Opioid (Medicare)
 output: 
     html_document:
         theme: cosmo 
+        code_download: yes
         toc: true
         toc_float: true
         highlight: tango

@@ -1,6 +1,6 @@
 .Rhistory
 .RData
-data/
+data/*.csv
 .Rproj.user
 .Ruserdata
 doc/
