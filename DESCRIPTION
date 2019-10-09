@@ -7,7 +7,7 @@ Package: ocs.opioid.medicare
 Type: package
 Title: Open Case Studies
 Version: 0.0.1
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.6.0)
 Imports: 
     choroplethr,
     choroplethrMaps,
