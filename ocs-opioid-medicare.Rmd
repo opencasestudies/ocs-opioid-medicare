@@ -18,6 +18,8 @@ knitr::opts_chunk$set(include = TRUE, comment = NA,
 ```{r echo=FALSE, out.width='100%'}
 knitr::include_graphics('./img/opioidmap.png')
 ```
+
+`![]("gganim.gif")` needs to be fixed. 
      
 # Motivation  
 
@@ -546,16 +548,19 @@ opioid prescription claims in Part D in 2016 are District of Columbia,
 Alaska, Wyoming, Vermont, and Hawaii.       
          
 ### (2) Can you visualize the top five States with the highest and lowest opioid prescription in Part D in 2016 among the fifty States and DC (with only these States shown)?      
+
 ```{r fig.width=8,fig.height=5}
 p <- prescriber2016byState %>% 
                     filter(region != "Others") %>%
                     arrange(.,-total_opioid_claim) %>%
                     filter(row_number() %in% c(1:5,
-                                               n()-4,
+                                               n()-4, 
                                                n()-3,
                                                n()-2,
                                                n()-1,
-                                               n())) %>%
+                                               n() # n() means the number of rows
+                                  # Thus, n() is the one with highet total_opioid_claim
+                                                  )) %>%
                     mutate(rankgroup = ifelse(row_number()<=5,"Lowest five",
                                               "Highest five")) %>%
                     ggplot(aes(x=reorder(state_name,
@@ -749,6 +754,79 @@ p + theme_bw() +
     xlab("States") + 
     ylab("Opioid Prescription Rate (Number of opioid claims per 100 claims)")   + 
     labs(fill = "Year")
+```  
+### Visualize/Animate the change by States using bar chart     
+     
+The alternative approach is to animate ther results using `gganimate`.        
+```{r eval=TRUE}
+# <Ref 1> https://gganimate.com/articles/gganimate.html
+# <Ref 2> https://towardsdatascience.com/create-animated-bar-charts-using-r-31d09e5841da
+library(gganimate)
+library(gifski)
+
+data4animation <-  prescriber2016byState %>% 
+        union(.,prescriber2015byState) %>%
+        union(.,prescriber2014byState) %>%
+        union(.,prescriber2013byState) %>%
+        filter(region != "Others") %>%
+        group_by(year) %>%
+        mutate(rank = rank(-state_opioid_prescribing_rate),
+               value_rel = state_opioid_prescribing_rate/state_opioid_prescribing_rate[rank==1],
+               value_std = round(state_opioid_prescribing_rate,2)) %>%
+        group_by(state_name) %>% 
+        filter(rank <= 20) %>% # choose the top 20
+        ungroup()
+
+staticplot = ggplot(data4animation, 
+                    aes(rank, 
+                        group = state_name, 
+                        fill = as.factor(state_name), 
+                        color = as.factor(state_name))) +
+  geom_tile(aes(y = round(state_opioid_prescribing_rate/2,2),
+                height = round(state_opioid_prescribing_rate,2),
+                width = 0.9), alpha = 0.8, color = NA) +
+  geom_text(aes(y = 0, label = paste(state_name, " ")), vjust = 0.2, hjust = 1) +
+  geom_text(aes(y= value_std,
+                label = value_std, hjust=0)) +
+  coord_flip(clip = "off", expand = FALSE) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_reverse() +
+  guides(color = FALSE, fill = FALSE) +
+  theme(axis.line=element_blank(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title.x=element_blank(),
+         axis.title.y=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.border=element_blank(),
+        panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.grid.major.x = element_line( size=.1, color="grey" ),
+        panel.grid.minor.x = element_line( size=.1, color="grey" ),
+        plot.title=element_text(size=10, hjust=0.5, face="bold", colour="grey", vjust=-1),
+        plot.subtitle=element_text(size=6, hjust=0.5, face="italic", color="grey"),
+        plot.caption =element_text(size=6, hjust=0.5, face="italic", color="grey"),
+        plot.background=element_blank()  ,
+       plot.margin = margin(2,2, 1, 3, "cm"))
+
+staticplot
+
+animation::ani.options(ani.width= 1000, ani.height=1000, ani.res = 1000)
+anim = staticplot + transition_states(year, 
+                                      transition_length = 3, 
+                                      state_length = 2) +
+  view_follow(fixed_x = TRUE)  +
+  labs(title = "Trend of opioid Prescription Rate (in Medicare Part D) by State {closest_state}",  
+       subtitle  =  "Opioid Prescription Rate (Number of opioid claims per 100 claims)",
+       caption  = "Data Source: CMS Data"
+       )
+anim 
+
+# This is the line to save the animation into gif format
+# animate(anim, 200, fps = 20,  width = 1200, height = 1000, 
+#         renderer = gifski_renderer("./img/gganim.gif"))
 ```
       
 In general, the trend the opioid prescription rate was decreasing during 2013 - 2016 across most of the States.    
